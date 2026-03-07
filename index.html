@@ -166,7 +166,9 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
   <div class="build-section">NATURE</div>
   <div class="build-grid">
     <div class="build-item" onclick="buildItem('grass')"><div class="bi-icon">🌿</div><span class="bi-name">GRASS</span><div class="bi-cost">5c</div></div>
-    <div class="build-item" onclick="buildItem('tree')"><div class="bi-icon">🌳</div><span class="bi-name">TREE</span><div class="bi-cost">10c</div></div>
+    <div class="build-item" onclick="buildItem('cherry')"><div class="bi-icon">🌸</div><span class="bi-name">桜</span><div class="bi-cost">15c</div></div>
+    <div class="build-item" onclick="buildItem('broadleaf')"><div class="bi-icon">🌳</div><span class="bi-name">広葉樹</span><div class="bi-cost">12c</div></div>
+    <div class="build-item" onclick="buildItem('conifer')"><div class="bi-icon">🌲</div><span class="bi-name">針葉樹</span><div class="bi-cost">12c</div></div>
     <div class="build-item" onclick="buildItem('mountain')"><div class="bi-icon">⛰️</div><span class="bi-name">MOUNTAIN</span><div class="bi-cost">150c</div></div>
     <div class="build-item" onclick="buildItem('river')"><div class="bi-icon">🌊</div><span class="bi-name">RIVER</span><div class="bi-cost">80c</div></div>
     <div class="build-item" onclick="buildItem('lake')"><div class="bi-icon">💧</div><span class="bi-name">LAKE</span><div class="bi-cost">120c</div></div>
@@ -177,7 +179,9 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
     <div class="build-item" onclick="buildItem('road')"><div class="bi-icon">&#x1F6E3;</div><span class="bi-name">ROAD</span><div class="bi-cost">20c</div></div>
     <div class="build-item" onclick="buildItem('roadcurveR')"><div class="bi-icon">&#x27A1;</div><span class="bi-name">CURVE R</span><div class="bi-cost">20c</div></div>
     <div class="build-item" onclick="buildItem('roadcurveL')"><div class="bi-icon">&#x2B05;</div><span class="bi-name">CURVE L</span><div class="bi-cost">20c</div></div>
-    <div class="build-item" onclick="buildItem('streetlight')"><div class="bi-icon">&#x1F4A1;</div><span class="bi-name">LIGHT</span><div class="bi-cost">15c</div></div>
+    <div class="build-item" onclick="buildItem('intersection')"><div class="bi-icon">✛</div><span class="bi-name">交差点</span><div class="bi-cost">30c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightR')"><div class="bi-icon">💡</div><span class="bi-name">街灯→</span><div class="bi-cost">15c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightL')"><div class="bi-icon">💡</div><span class="bi-name">街灯←</span><div class="bi-cost">15c</div></div>
     <div class="build-item" onclick="buildItem('bridge')"><div class="bi-icon">&#x1F309;</div><span class="bi-name">BRIDGE</span><div class="bi-cost">100c</div></div>
     <div class="build-item" onclick="buildItem('footbridge')"><div class="bi-icon">&#x1F6B6;</div><span class="bi-name">WALKWAY</span><div class="bi-cost">60c</div></div>
     <div class="build-item" onclick="buildItem('car')"><div class="bi-icon">&#x1F697;</div><span class="bi-name">CAR</span><div class="bi-cost">30c</div></div>
@@ -188,6 +192,8 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
   <div class="build-grid">
     <div class="build-item" onclick="buildItem('house')"><div class="bi-icon">🏠</div><span class="bi-name">HOUSE</span><div class="bi-cost">80c</div></div>
     <div class="build-item" onclick="buildItem('building')"><div class="bi-icon">🏢</div><span class="bi-name">BUILDING</span><div class="bi-cost">50c</div></div>
+    <div class="build-item" onclick="buildItem('glassbuilding')"><div class="bi-icon">🏙️</div><span class="bi-name">GLASS</span><div class="bi-cost">80c</div></div>
+    <div class="build-item" onclick="buildItem('paddy')"><div class="bi-icon">🌾</div><span class="bi-name">PADDY</span><div class="bi-cost">40c</div></div>
     <div class="build-item" onclick="buildItem('school')"><div class="bi-icon">🏫</div><span class="bi-name">SCHOOL</span><div class="bi-cost">200c</div></div>
     <div class="build-item" onclick="buildItem('gym')"><div class="bi-icon">🏋️</div><span class="bi-name">GYM</span><div class="bi-cost">150c</div></div>
   </div>
@@ -253,6 +259,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
   }
   tryLoad();
 })();
+
 </script>
 
 <script>
@@ -304,7 +311,11 @@ var minimapExpanded=false;
 // Scene, camera, renderer, lights declared in initGame
 var scene, camera, renderer, ambientLight, sun, towerLight;
 var windowMeshes=[];
+var beaconMeshes=[]; // 屋上赤点滅ライト
+var vehicleLights=[]; // 車バイクのライト {hl:material, tl:material}
 var topGlow, starsMat, brightStarsMat, sunSphere, sunGlow, sunGlowMat, sunGlow2, sunGlow2Mat;
+var obsLight1, obsLight2, tipLightRef, coreFlowMats=[];
+var obsGlowMat1, obsGlowMat2;
 var moonSphere, moonGlow, moonGlowMat;
 var timeLabelEl;
 var yaw=Math.PI, pitch=-0.15, isDragging=false, lastX=0, lastY=0;
@@ -326,15 +337,15 @@ var buildingPalettes=[
   {base:0x4a4a6a,glass:0x2a3a6a,trim:0x6a6a8a},
 ];
 
-var BUILD_COSTS={bridge:100,footbridge:60,roadcurveR:20,roadcurveL:20,streetlight:15,grass:5,tree:10,mountain:150,river:80,lake:120,fountain:60,road:20,car:30,bike:20,person:5,house:80,building:50,school:200,gym:150,schoolyard:100,tennis:120,baseball:250};
+var BUILD_COSTS={bridge:100,footbridge:60,roadcurveR:20,roadcurveL:20,intersection:30,streetlightR:15,streetlightL:15,streetlight:15,grass:5,tree:10,broadleaf:12,conifer:12,cherry:15,mountain:150,river:80,lake:120,fountain:60,road:20,car:30,bike:20,person:5,house:80,building:50,glassbuilding:80,school:200,gym:150,schoolyard:100,tennis:120,baseball:250,paddy:40};
 
 var TIME_CYCLE = 120;
+// 時間帯は太陽位置で動的計算（timeColorsは互換用に残す）
 var timeColors = [
-  {sky:0xff6622,fog:0xcc4411,amb:0x331100,sun:0xff8844,si:0.7,label:'DAWN'},
-  {sky:0x88ccee,fog:0x66aacc,amb:0x223344,sun:0xffffff,si:0.8,label:'MORNING'},
-  {sky:0xd0e8f8,fog:0xaaccdd,amb:0x334455,sun:0xffffff,si:1.0,label:'DAY'},
-  {sky:0xff9944,fog:0xdd6622,amb:0x331100,sun:0xffbb44,si:0.9,label:'SUNSET'},
-  {sky:0x000102,fog:0x000000,amb:0x010102,sun:0x050a1a,si:0.02,label:'NIGHT'},
+  {sky:0x87ceeb,fog:0x99ddee,amb:0x334466,sun:0xfffde0,si:0.9,label:'MORNING'},
+  {sky:0x5ba3d9,fog:0x77aacc,amb:0x334455,sun:0xffffff,si:1.0,label:'DAY'},
+  {sky:0x221008,fog:0x110400,amb:0x180800,sun:0xff6622,si:0.3,label:'SUNSET'},
+  {sky:0x000000,fog:0x000000,amb:0x010102,sun:0x020408,si:0.01,label:'NIGHT'},
 ];
 
 var bD2=[[20,20,130],[-20,20,100],[20,-20,115],[-20,-20,90],[35,35,150],[-35,35,75],[35,-35,110],[-35,-35,140],[80,80,65],[-80,80,50],[80,-80,60],[-80,-80,45],[110,0,38],[-110,0,32],[0,110,42],[0,-110,35],[50,10,55],[-50,10,45],[10,50,70],[-10,-50,52],[160,160,22],[-160,160,18],[160,-160,24],[-160,-160,16]];
@@ -379,9 +390,9 @@ function toggleMinimap(){
 
 function mkB(x,z,w,d,h){
   var pal=buildingPalettes[Math.floor(Math.random()*buildingPalettes.length)];
-  var bMat2=new THREE.MeshStandardMaterial({color:pal.base,roughness:0.4,metalness:0.6});
-  var glassMat=new THREE.MeshStandardMaterial({color:pal.glass,roughness:0.05,metalness:0.8,transparent:true,opacity:0.7});
-  var trimMat=new THREE.MeshStandardMaterial({color:pal.trim,roughness:0.3,metalness:0.7});
+  var bMat2=new THREE.MeshStandardMaterial({color:pal.base,roughness:0.9,metalness:0.0,envMapIntensity:0.0});
+  var glassMat=new THREE.MeshStandardMaterial({color:pal.glass,roughness:0.3,metalness:0.05,transparent:true,opacity:0.55,envMapIntensity:0.0});
+  var trimMat=new THREE.MeshStandardMaterial({color:pal.trim,roughness:0.7,metalness:0.2});
   var body2=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),bMat2);
   body2.castShadow=true;body2.receiveShadow=true;
   body2.position.set(x,h/2,z);scene.add(body2);
@@ -513,7 +524,9 @@ function buildItem(type){
     }
     else if(type==='roadcurveR'){ buildRoadCurve(x,z,'right'); showNotif('右カーブ！'); }
     else if(type==='roadcurveL'){ buildRoadCurve(x,z,'left'); showNotif('左カーブ！'); }
-    else if(type==='streetlight'){ buildStreetlight(x,z); showNotif('街灯！'); }
+    else if(type==='streetlight'){ buildStreetlight(x,z,1); showNotif('街灯！'); }
+    else if(type==='streetlightR'){ buildStreetlight(x,z,1); showNotif('街灯（右向き）！'); }
+    else if(type==='streetlightL'){ buildStreetlight(x,z,-1); showNotif('街灯（左向き）！'); }
     else if(type==='car'){ spawnCar(x,z); showNotif('車を配置！'); }
     else if(type==='bike'){ spawnBike(x,z); showNotif('バイクを配置！'); }
     else if(type==='person'){ spawnPerson(x,z); showNotif('人を配置！'); }
@@ -535,6 +548,12 @@ function buildItem(type){
       placedObjects.push({meshes:growRegistry[hk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:hk});
       showNotif('一軒家 Lv'+growRegistry[hk].level+'！');
     }
+    else if(type==='glassbuilding'){
+      var gbk=growKey(x,z,'glassbuilding');
+      if(!growRegistry[gbk]) growRegistry[gbk]={level:1,meshes:[]};
+      else growRegistry[gbk].level=Math.min(growRegistry[gbk].level+1,15);
+      addGrowableGlassBuilding(x,z);
+    }
     else if(type==='building'){
       var bk=growKey(x,z,'building');
       if(!growRegistry[bk]) growRegistry[bk]={level:1,meshes:[]};
@@ -551,6 +570,32 @@ function buildItem(type){
       addGrowableSchool(x,z);
       placedObjects.push({meshes:growRegistry[sk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:sk});
       showNotif('学校 '+growRegistry[sk].level+'F！');
+    }
+    else if(type==='cherry'){
+      buildCherryTree(x,z);
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-10),type:type,cost:cost,x:x,z:z});
+      showNotif('桜！');
+    }
+    else if(type==='broadleaf'){
+      buildBroadleafTree(x,z);
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-12),type:type,cost:cost,x:x,z:z});
+      showNotif('広葉樹！');
+    }
+    else if(type==='conifer'){
+      buildConiferTree(x,z);
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-6),type:type,cost:cost,x:x,z:z});
+      showNotif('針葉樹！');
+    }
+    else if(type==='intersection'){
+      buildIntersection(x,z);
+      var rk=x+'_'+z; roadTiles.add(rk);
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-8),type:type,cost:cost,x:x,z:z,roadKey:rk});
+      showNotif('交差点！');
+    }
+    else if(type==='paddy'){
+      var paddyMeshes=addRicePaddy(x,z);
+      placedObjects.push({meshes:paddyMeshes,type:type,cost:cost,x:x,z:z});
+      showNotif('田んぼ！');
     }
     else{ showNotif('未対応: '+type); }
   }catch(err){
@@ -574,44 +619,72 @@ function toggleRecoveryMode(){
   }
 }
 
+function doRemoveObject(obj){
+  // meshes を scene から除去
+  obj.meshes.forEach(function(m){
+    if(!m) return;
+    scene.remove(m);
+    for(var wi=windowMeshes.length-1;wi>=0;wi--){
+      if(windowMeshes[wi].mesh===m) windowMeshes.splice(wi,1);
+    }
+    for(var bi=beaconMeshes.length-1;bi>=0;bi--){
+      if(beaconMeshes[bi].core===m||beaconMeshes[bi].glow===m) beaconMeshes.splice(bi,1);
+    }
+    for(var vli=vehicleLights.length-1;vli>=0;vli--){
+      // groupの子なので直接消える
+    }
+  });
+  if(obj.movingRef){
+    var mri=movingObjects.indexOf(obj.movingRef);
+    if(mri!==-1) movingObjects.splice(mri,1);
+  }
+  if(obj.roadKey) roadTiles.delete(obj.roadKey);
+  if(obj.key && growRegistry[obj.key]){
+    var reg=growRegistry[obj.key];
+    reg.meshes.forEach(function(m){ scene.remove(m); });
+    reg.meshes=[];
+    if(reg.level<=1){
+      delete growRegistry[obj.key];
+    } else {
+      reg.level--;
+      var kp=obj.key.split('_');
+      var kx=parseFloat(kp[0]), kz=parseFloat(kp[1]), ktype=kp[2];
+      if(ktype==='glassbuilding') addGrowableGlassBuilding(kx,kz);
+      else if(ktype==='building') addGrowableBuilding(kx,kz,TILE*0.85,TILE*0.85,TILE);
+      else if(ktype==='house') addGrowableHouse(kx,kz);
+      else if(ktype==='school') addGrowableSchool(kx,kz);
+      else if(ktype==='mountain') addGrowableMountain(kx,kz);
+    }
+  }
+  playerCoins+=obj.cost;
+  updateCoinDisplay();
+  showNotif('回収！ +'+obj.cost+'c返還');
+}
+
 function recoverLast(){
   var btn=document.getElementById('recovery-btn');
   btn.classList.remove('active');
   btn.textContent='UNDO';
   recoveryMode=false;
   if(placedObjects.length===0){ showNotif('回収できるものがありません'); return; }
-  var last=placedObjects.pop();
-  last.meshes.forEach(function(m){
-    if(!m) return;
-    scene.remove(m);
-    for(var wi=windowMeshes.length-1;wi>=0;wi--){
-      if(windowMeshes[wi].mesh===m) windowMeshes.splice(wi,1);
-    }
-  });
-  if(last.movingRef){
-    var mri=movingObjects.indexOf(last.movingRef);
-    if(mri!==-1) movingObjects.splice(mri,1);
+
+  // 十字カーソルが向いている位置（placePos）に最も近いオブジェクトを回収
+  var pos=placePos();
+  var cx=pos.x, cz=pos.z;
+  var bestIdx=-1, bestDist=Infinity;
+  for(var i=0;i<placedObjects.length;i++){
+    var o=placedObjects[i];
+    if(o.type==='car'||o.type==='bike'||o.type==='person') continue;
+    var dx=o.x-cx, dz=o.z-cz;
+    var dist=dx*dx+dz*dz;
+    if(dist<bestDist){ bestDist=dist; bestIdx=i; }
   }
-  if(last.roadKey) roadTiles.delete(last.roadKey);
-  if(last.key && growRegistry[last.key]){
-    var reg=growRegistry[last.key];
-    reg.meshes.forEach(function(m){ scene.remove(m); });
-    reg.meshes=[];
-    if(reg.level<=1){
-      delete growRegistry[last.key];
-    } else {
-      reg.level--;
-      var kp=last.key.split('_');
-      var kx=parseFloat(kp[0]), kz=parseFloat(kp[1]), ktype=kp[2];
-      if(ktype==='building') addGrowableBuilding(kx,kz,TILE*0.85,TILE*0.85,TILE);
-      else if(ktype==='house') addGrowableHouse(kx,kz);
-      else if(ktype==='school') addGrowableSchool(kx,kz);
-      else if(ktype==='mountain') addGrowableMountain(kx,kz);
-    }
-  }
-  playerCoins+=last.cost;
-  updateCoinDisplay();
-  showNotif('回収！ +'+last.cost+'コイン返還');
+  // 近くに何もなければ最後尾を回収
+  if(bestIdx===-1) bestIdx=placedObjects.length-1;
+  if(bestIdx<0){ showNotif('回収できるものがありません'); return; }
+
+  var obj=placedObjects.splice(bestIdx,1)[0];
+  doRemoveObject(obj);
 }
 
 function spawnCar(sx,sz){
@@ -620,51 +693,88 @@ function spawnCar(sx,sz){
   var group=new THREE.Group();
   var bodyMat=new THREE.MeshStandardMaterial({color:col,roughness:0.15,metalness:0.9});
   var fgMat=new THREE.MeshStandardMaterial({color:0x88ccff,transparent:true,opacity:0.45,roughness:0.0,metalness:0.3});
-  var lower=new THREE.Mesh(new THREE.BoxGeometry(4.0,0.9,7.6),bodyMat);
-  lower.castShadow=true;lower.receiveShadow=true;lower.position.set(0,0.95,0); group.add(lower);
-  var upper=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.85,4.0),bodyMat);
-  upper.position.set(0,1.83,-0.4); group.add(upper);
-  var nose=new THREE.Mesh(new THREE.BoxGeometry(3.8,0.5,1.2),new THREE.MeshStandardMaterial({color:col,roughness:0.1,metalness:0.95}));
-  nose.rotation.x=0.35; nose.position.set(0,1.1,3.6); group.add(nose);
-  var fg=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.8,0.12),fgMat);
-  fg.rotation.x=0.45; fg.position.set(0,1.9,1.95); group.add(fg);
-  var rg=new THREE.Mesh(new THREE.BoxGeometry(3.0,0.7,0.12),fgMat);
-  rg.rotation.x=-0.35; rg.position.set(0,1.85,-2.35); group.add(rg);
-  [1.72,-1.72].forEach(function(sw_x){
-    var sw=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.6,2.8),fgMat);
-    sw.position.set(sw_x,1.88,-0.3); group.add(sw);
+  // 車: 実サイズ(幅1.8m,長4m)相当
+  var S=0.5; // スケール係数（半分）
+  var paintMat=new THREE.MeshStandardMaterial({color:col,roughness:0.25,metalness:0.6,envMapIntensity:0.3});
+  var darkMat=new THREE.MeshStandardMaterial({color:0x111111,roughness:0.8,metalness:0.1});
+  var chromeMat2=new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.1,metalness:0.9,envMapIntensity:0.2});
+  // ボディ下部
+  var lower=new THREE.Mesh(new THREE.BoxGeometry(2.0*S,0.45*S,3.8*S),paintMat);
+  lower.position.set(0,0.48*S,0); group.add(lower);
+  // キャビン
+  var upper=new THREE.Mesh(new THREE.BoxGeometry(1.7*S,0.5*S,2.0*S),paintMat);
+  upper.position.set(0,0.92*S,-0.2*S); group.add(upper);
+  // フロントノーズ（傾斜）
+  var noseG=new THREE.BoxGeometry(1.9*S,0.28*S,0.6*S);
+  var noseMesh=new THREE.Mesh(noseG,paintMat);
+  noseMesh.rotation.x=0.3; noseMesh.position.set(0,0.55*S,1.8*S); group.add(noseMesh);
+  // ルーフ
+  var roof=new THREE.Mesh(new THREE.BoxGeometry(1.6*S,0.08*S,1.8*S),paintMat);
+  roof.position.set(0,1.18*S,-0.2*S); group.add(roof);
+  // フロントガラス
+  var fwg=new THREE.Mesh(new THREE.BoxGeometry(1.55*S,0.42*S,0.06*S),fgMat);
+  fwg.rotation.x=0.5; fwg.position.set(0,0.96*S,0.98*S); group.add(fwg);
+  // リアガラス
+  var rwg=new THREE.Mesh(new THREE.BoxGeometry(1.5*S,0.38*S,0.06*S),fgMat);
+  rwg.rotation.x=-0.4; rwg.position.set(0,0.94*S,-1.18*S); group.add(rwg);
+  // サイドガラス
+  [-1.01*S,1.01*S].forEach(function(sx2){
+    var sg=new THREE.Mesh(new THREE.BoxGeometry(0.06*S,0.36*S,1.5*S),fgMat);
+    sg.position.set(sx2,0.95*S,-0.15*S); group.add(sg);
   });
+  // ホイール(4輪)
   var wMat=new THREE.MeshStandardMaterial({color:0x111111,roughness:0.95});
-  var rimMat=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:0.1,metalness:1.0});
-  [[1.95,2.6],[1.95,-2.6],[-1.95,2.6],[-1.95,-2.6]].forEach(function(wp){
+  var rimMat=new THREE.MeshStandardMaterial({color:0xbbbbbb,roughness:0.15,metalness:0.9});
+  [[0.98*S,1.3*S],[0.98*S,-1.3*S],[-0.98*S,1.3*S],[-0.98*S,-1.3*S]].forEach(function(wp){
     var wx=wp[0],wz=wp[1];
-    var tire=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.75,0.55,20),wMat);
-    tire.rotation.z=Math.PI/2; tire.position.set(wx,0.75,wz); group.add(tire);
-    var rim=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.58,12),rimMat);
-    rim.rotation.z=Math.PI/2; rim.position.set(wx,0.75,wz); group.add(rim);
+    var tire=new THREE.Mesh(new THREE.CylinderGeometry(0.36*S,0.36*S,0.28*S,16),wMat);
+    tire.rotation.z=Math.PI/2; tire.position.set(wx,0.36*S,wz); group.add(tire);
+    var rim=new THREE.Mesh(new THREE.CylinderGeometry(0.22*S,0.22*S,0.3*S,10),rimMat);
+    rim.rotation.z=Math.PI/2; rim.position.set(wx,0.36*S,wz); group.add(rim);
+    // スポーク5本
     for(var sp=0;sp<5;sp++){
-      var a=sp/5*Math.PI;
-      var spoke=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.06,0.06),rimMat);
-      spoke.rotation.z=a; spoke.position.set(wx,0.75,wz); group.add(spoke);
+      var spk=new THREE.Mesh(new THREE.BoxGeometry(0.3*S,0.03*S,0.03*S),rimMat);
+      spk.rotation.z=sp/5*Math.PI; spk.position.set(wx,0.36*S,wz); group.add(spk);
     }
   });
-  var hlMat=new THREE.MeshBasicMaterial({color:0xffffee});
-  [[1.3,3.7],[-1.3,3.7]].forEach(function(lp){
-    var hl=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.28,0.12),hlMat);
-    hl.position.set(lp[0],1.05,lp[1]); group.add(hl);
+  // ホイールアーチ
+  var archMat=new THREE.MeshStandardMaterial({color:col,roughness:0.4,metalness:0.3});
+  [[0.98*S,1.3*S],[0.98*S,-1.3*S],[-0.98*S,1.3*S],[-0.98*S,-1.3*S]].forEach(function(wp){
+    var arch=new THREE.Mesh(new THREE.CylinderGeometry(0.42*S,0.42*S,0.1*S,12,1,false,0,Math.PI),archMat);
+    arch.rotation.z=Math.PI/2; arch.position.set(wp[0],0.36*S,wp[1]); group.add(arch);
   });
-  var tlMat=new THREE.MeshBasicMaterial({color:0xff2200});
-  [[1.3,-3.7],[-1.3,-3.7]].forEach(function(lp){
-    var tl=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.24,0.1),tlMat);
-    tl.position.set(lp[0],1.05,lp[1]); group.add(tl);
+  // ヘッドライト（夜間点灯）
+  var hlMat=new THREE.MeshBasicMaterial({color:0xffffee,transparent:true,opacity:0.0});
+  [[0.6*S,1.88*S],[-0.6*S,1.88*S]].forEach(function(lp){
+    var hl=new THREE.Mesh(new THREE.BoxGeometry(0.28*S,0.14*S,0.06*S),hlMat);
+    hl.position.set(lp[0],0.52*S,lp[1]); group.add(hl);
   });
-  var grille=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.4,0.15),new THREE.MeshStandardMaterial({color:0x222222,roughness:0.5,metalness:0.6}));
-  grille.position.set(0,0.85,3.79); group.add(grille);
-  group.position.set(sx||0, 0.75, sz||0);
+  // テールライト（夜間点灯）
+  var tlMat=new THREE.MeshBasicMaterial({color:0xff1100,transparent:true,opacity:0.0});
+  [[0.6*S,-1.9*S],[-0.6*S,-1.9*S]].forEach(function(lp){
+    var tl=new THREE.Mesh(new THREE.BoxGeometry(0.26*S,0.12*S,0.05*S),tlMat);
+    tl.position.set(lp[0],0.5*S,lp[1]); group.add(tl);
+  });
+  vehicleLights.push({hl:hlMat, tl:tlMat});
+  // グリル
+  var grille=new THREE.Mesh(new THREE.BoxGeometry(1.2*S,0.2*S,0.08*S),darkMat);
+  grille.position.set(0,0.42*S,1.9*S); group.add(grille);
+  // ドアライン（装飾）
+  var doorMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.5,metalness:0.5});
+  [-1.02*S,1.02*S].forEach(function(dx){
+    var door=new THREE.Mesh(new THREE.BoxGeometry(0.04*S,0.32*S,0.9*S),doorMat);
+    door.position.set(dx,0.55*S,-0.05*S); group.add(door);
+  });
+  group.position.set(sx||0, 0.36*S, sz||0);
   scene.add(group);
   var carAxis=Math.abs(Math.sin(yaw))>Math.abs(Math.cos(yaw))?'x':'z';
   var carDir=carAxis==='x'?(Math.sin(yaw)>0?1:-1):(Math.cos(yaw)>0?1:-1);
-  var carObj={group:group,type:'car',speed:0.35+Math.random()*0.35,dir:carDir,axis:carAxis,limit:600,onRoadOnly:true};
+  var carLaneOff=1.8; // 中央線からの距離(m)
+  // 初期lane offset: dir=+1は負側、dir=-1は正側（左側通行）
+  var carLaneSign = (carAxis==='x') ? (carDir>0?-1:1) : (carDir>0?-1:1);
+  if(carAxis==='x') group.position.z += carLaneSign*carLaneOff;
+  else group.position.x += carLaneSign*carLaneOff;
+  var carObj={group:group,type:'car',speed:0.35+Math.random()*0.35,dir:carDir,axis:carAxis,limit:600,onRoadOnly:true,laneOff:carLaneOff};
   movingObjects.push(carObj);
   placedObjects.push({meshes:[group],type:'car',cost:BUILD_COSTS.car,x:sx||0,z:sz||0,movingRef:carObj});
 }
@@ -678,39 +788,60 @@ function spawnBike(sx,sz){
   var chromeMat=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:0.05,metalness:1.0});
   var wMat=new THREE.MeshStandardMaterial({color:0x0d0d0d,roughness:0.95});
   var rimMat2=new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.05,metalness:1.0});
-  var frame=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.6,3.2),cMat);
-  frame.position.set(0,1.1,0); group.add(frame);
-  var tank=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.42,1.3),bMat);
-  tank.position.set(0,1.65,0.3); group.add(tank);
-  var cowl=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.65,0.7),bMat);
-  cowl.position.set(0,1.42,1.85); group.add(cowl);
-  var hl=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,0.1,12),new THREE.MeshBasicMaterial({color:0xffffcc}));
-  hl.rotation.x=Math.PI/2; hl.position.set(0,1.45,2.22); group.add(hl);
-  var seat=new THREE.Mesh(new THREE.BoxGeometry(0.44,0.14,1.1),cMat);
-  seat.position.set(0,1.72,-0.6); group.add(seat);
-  var handle=new THREE.Mesh(new THREE.BoxGeometry(1.15,0.08,0.08),chromeMat);
-  handle.position.set(0,1.75,1.55); group.add(handle);
-  var engine=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.55,0.85),cMat);
-  engine.position.set(0,0.82,0.15); group.add(engine);
-  var muffler=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.11,1.55,10),chromeMat);
-  muffler.rotation.z=Math.PI/2; muffler.position.set(0.38,0.7,-0.9); group.add(muffler);
-  [[0,1.65],[0,-1.65]].forEach(function(wp){
+  // バイク: 実サイズ相当(半分スケール)
+  var BS=0.5;
+  var paintMatB=new THREE.MeshStandardMaterial({color:col,roughness:0.2,metalness:0.65,envMapIntensity:0.3});
+  // フレーム
+  var frame=new THREE.Mesh(new THREE.BoxGeometry(0.21*BS,0.3*BS,1.6*BS),cMat);
+  frame.position.set(0,0.55*BS,0); group.add(frame);
+  // エンジン
+  var engine=new THREE.Mesh(new THREE.BoxGeometry(0.24*BS,0.28*BS,0.42*BS),cMat);
+  engine.position.set(0,0.41*BS,0.08*BS); group.add(engine);
+  // タンク
+  var tank=new THREE.Mesh(new THREE.BoxGeometry(0.26*BS,0.21*BS,0.65*BS),paintMatB);
+  tank.position.set(0,0.83*BS,0.15*BS); group.add(tank);
+  // シート
+  var seat=new THREE.Mesh(new THREE.BoxGeometry(0.22*BS,0.07*BS,0.55*BS),cMat);
+  seat.position.set(0,0.86*BS,-0.3*BS); group.add(seat);
+  // カウル（フロント）
+  var cowl=new THREE.Mesh(new THREE.BoxGeometry(0.24*BS,0.32*BS,0.35*BS),paintMatB);
+  cowl.position.set(0,0.72*BS,0.93*BS); group.add(cowl);
+  // ヘッドライト
+  var hlB=new THREE.Mesh(new THREE.CylinderGeometry(0.09*BS,0.09*BS,0.05*BS,10),new THREE.MeshBasicMaterial({color:0xffffcc}));
+  hlB.rotation.x=Math.PI/2; hlB.position.set(0,0.72*BS,1.12*BS); group.add(hlB);
+  // ハンドル
+  var handle=new THREE.Mesh(new THREE.BoxGeometry(0.58*BS,0.04*BS,0.04*BS),chromeMat);
+  handle.position.set(0,0.88*BS,0.78*BS); group.add(handle);
+  // マフラー
+  var muffler=new THREE.Mesh(new THREE.CylinderGeometry(0.04*BS,0.055*BS,0.78*BS,8),chromeMat);
+  muffler.rotation.z=Math.PI/2; muffler.position.set(0.19*BS,0.35*BS,-0.45*BS); group.add(muffler);
+  // フォーク（前輪サスペンション）
+  var fork=new THREE.Mesh(new THREE.BoxGeometry(0.04*BS,0.45*BS,0.04*BS),chromeMat);
+  fork.position.set(0.05*BS,0.45*BS,0.82*BS); group.add(fork);
+  var fork2=new THREE.Mesh(new THREE.BoxGeometry(0.04*BS,0.45*BS,0.04*BS),chromeMat);
+  fork2.position.set(-0.05*BS,0.45*BS,0.82*BS); group.add(fork2);
+  // ホイール2輪
+  [[0,0.83*BS],[0,-0.83*BS]].forEach(function(wp){
     var wz2=wp[1];
-    var tire=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.62,0.22,20),wMat);
-    tire.rotation.z=Math.PI/2; tire.position.set(0,0.65,wz2); group.add(tire);
-    var rim2=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,0.26,12),rimMat2);
-    rim2.rotation.z=Math.PI/2; rim2.position.set(0,0.65,wz2); group.add(rim2);
+    var tire=new THREE.Mesh(new THREE.CylinderGeometry(0.31*BS,0.31*BS,0.11*BS,16),wMat);
+    tire.rotation.z=Math.PI/2; tire.position.set(0,0.32*BS,wz2); group.add(tire);
+    var rim2=new THREE.Mesh(new THREE.CylinderGeometry(0.16*BS,0.16*BS,0.13*BS,12),rimMat2);
+    rim2.rotation.z=Math.PI/2; rim2.position.set(0,0.32*BS,wz2); group.add(rim2);
     for(var sp=0;sp<8;sp++){
       var a=sp/8*Math.PI;
-      var spoke2=new THREE.Mesh(new THREE.BoxGeometry(0.58,0.04,0.04),rimMat2);
-      spoke2.rotation.z=a; spoke2.position.set(0,0.65,wz2); group.add(spoke2);
+      var spoke2=new THREE.Mesh(new THREE.BoxGeometry(0.29*BS,0.02*BS,0.02*BS),rimMat2);
+      spoke2.rotation.z=a; spoke2.position.set(0,0.32*BS,wz2); group.add(spoke2);
     }
   });
-  group.position.set(sx||0, 0.65, sz||0);
+  group.position.set(sx||0, 0.32*BS, sz||0);
   scene.add(group);
   var bikeAxis=Math.abs(Math.sin(yaw))>Math.abs(Math.cos(yaw))?'x':'z';
   var bikeDir=bikeAxis==='x'?(Math.sin(yaw)>0?1:-1):(Math.cos(yaw)>0?1:-1);
-  var bikeObj={group:group,type:'bike',speed:0.55+Math.random()*0.5,dir:bikeDir,axis:bikeAxis,limit:600,onRoadOnly:true};
+  var bikeLaneOff=1.8;
+  var bikeLaneSign = (bikeAxis==='x') ? (bikeDir>0?-1:1) : (bikeDir>0?-1:1);
+  if(bikeAxis==='x') group.position.z += bikeLaneSign*bikeLaneOff;
+  else group.position.x += bikeLaneSign*bikeLaneOff;
+  var bikeObj={group:group,type:'bike',speed:0.55+Math.random()*0.5,dir:bikeDir,axis:bikeAxis,limit:600,onRoadOnly:true,laneOff:bikeLaneOff};
   movingObjects.push(bikeObj);
   placedObjects.push({meshes:[group],type:'bike',cost:BUILD_COSTS.bike,x:sx||0,z:sz||0,movingRef:bikeObj});
 }
@@ -731,20 +862,24 @@ function buildRoadCurve(x,z,dir){
   placedObjects.push({meshes:bm,type:'roadcurve',cost:BUILD_COSTS.roadcurveR,x:x,z:z});
 }
 
-function buildStreetlight(x,z){
+function buildStreetlight(x,z,dir){
+  var d=dir||1; // 1=右(+x方向), -1=左(-x方向)
   var bm=[];
-  var poleMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.3,metalness:0.8});
-  var pole=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.2,10,8),poleMat);
-  pole.position.set(x,5,z); scene.add(pole); bm.push(pole);
-  var arm=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,3,6),poleMat);
-  arm.rotation.z=Math.PI/2; arm.position.set(x+1.5,9.8,z); scene.add(arm); bm.push(arm);
-  var lampMat=new THREE.MeshStandardMaterial({color:0xddddcc,roughness:0.3,metalness:0.5});
-  var lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.3,0.6,8),lampMat);
-  lamp.position.set(x+3,9.5,z); scene.add(lamp); bm.push(lamp);
-  var light=new THREE.PointLight(0xffffcc,2.0,40);
-  light.position.set(x+3,9.2,z); scene.add(light); bm.push(light);
+  var poleMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.3,metalness:0.8,envMapIntensity:0.0});
   var base=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,0.5,8),poleMat);
   base.position.set(x,0.25,z); scene.add(base); bm.push(base);
+  var pole=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.2,10,8),poleMat);
+  pole.position.set(x,5,z); scene.add(pole); bm.push(pole);
+  // 横アーム（dirで左右）
+  var arm=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,3.2,6),poleMat);
+  arm.rotation.z=Math.PI/2; arm.position.set(x+d*1.6,9.8,z); scene.add(arm); bm.push(arm);
+  // ランプカバー（傘型）
+  var lampMat=new THREE.MeshStandardMaterial({color:0xddddcc,roughness:0.3,metalness:0.5,envMapIntensity:0.0});
+  var lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.25,0.7,8),lampMat);
+  lamp.position.set(x+d*3.1,9.45,z); scene.add(lamp); bm.push(lamp);
+  // 光源
+  var light=new THREE.PointLight(0xffffcc,3.5,50);
+  light.position.set(x+d*3.1,9.1,z); scene.add(light); bm.push(light);
   placedObjects.push({meshes:bm,type:'streetlight',cost:BUILD_COSTS.streetlight,x:x,z:z});
 }
 
@@ -797,6 +932,88 @@ function buildFootbridge(x,z){
   return meshes;
 }
 
+
+
+function buildCherryTree(x,z){
+  var trunkH=3.5+Math.random()*2.5;
+  var trunkR=0.18+Math.random()*0.1;
+  var trunkMat=new THREE.MeshStandardMaterial({color:0x4a2a15,roughness:0.9});
+  var trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkR*0.65,trunkR,trunkH,8),trunkMat);
+  trunk.position.set(x,trunkH/2,z); scene.add(trunk);
+  // 枝
+  var branchMat=new THREE.MeshStandardMaterial({color:0x5a3520,roughness:0.9});
+  for(var b=0;b<5;b++){
+    var ba=b/5*Math.PI*2;
+    var bLen=1.8+Math.random()*1.2;
+    var br=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.08,bLen,5),branchMat);
+    br.position.set(x+Math.cos(ba)*bLen*0.4, trunkH+0.2, z+Math.sin(ba)*bLen*0.4);
+    br.rotation.z = Math.cos(ba)*0.5; br.rotation.x = Math.sin(ba)*0.5;
+    scene.add(br);
+  }
+  // 花びら: ピンクの球群
+  var pinkCols=[0xffb7c5,0xff99aa,0xffaacc,0xff88bb,0xffccdd,0xffd0e0];
+  var leafR=2.2+Math.random()*1.0;
+  for(var i=0;i<9;i++){
+    var a=i/9*Math.PI*2;
+    var radius=leafR*(0.5+Math.random()*0.4);
+    var yOff=Math.random()*0.8-0.2;
+    var sz=0.5+Math.random()*0.5;
+    var petal=new THREE.Mesh(
+      new THREE.SphereGeometry(sz,7,5),
+      new THREE.MeshStandardMaterial({color:pinkCols[i%pinkCols.length],roughness:0.9,transparent:true,opacity:0.92})
+    );
+    petal.position.set(x+Math.cos(a)*radius, trunkH+leafR*0.5+yOff, z+Math.sin(a)*radius);
+    scene.add(petal);
+  }
+  // 中央の大きな花房
+  var centerBloom=new THREE.Mesh(
+    new THREE.SphereGeometry(leafR*0.65,9,7),
+    new THREE.MeshStandardMaterial({color:0xffb0c8,roughness:0.9,transparent:true,opacity:0.88})
+  );
+  centerBloom.position.set(x, trunkH+leafR*0.7, z);
+  scene.add(centerBloom);
+}
+function buildBroadleafTree(x,z){
+  // 広葉樹: 丸い葉群の木
+  var trunkH=4+Math.random()*3;
+  var trunkR=0.22+Math.random()*0.12;
+  var trunkMat=new THREE.MeshStandardMaterial({color:0x5a3a1a,roughness:0.95});
+  var trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkR*0.7,trunkR,trunkH,8),trunkMat);
+  trunk.position.set(x,trunkH/2,z); scene.add(trunk);
+  var leafR=2.5+Math.random()*1.2;
+  var greens=[0x2d6a2d,0x3a7a2a,0x4a8a35,0x2a5a1a,0x228822,0x336633];
+  var lm=new THREE.MeshStandardMaterial({color:greens[Math.floor(Math.random()*greens.length)],roughness:0.85});
+  // メイン球
+  var main=new THREE.Mesh(new THREE.SphereGeometry(leafR*0.8,9,7),lm);
+  main.position.set(x,trunkH+leafR*0.7,z); scene.add(main);
+  // 周囲6球
+  for(var i=0;i<6;i++){
+    var a=i/6*Math.PI*2;
+    var s=new THREE.Mesh(new THREE.SphereGeometry(leafR*0.5+Math.random()*0.3,8,5),lm);
+    s.position.set(x+Math.cos(a)*leafR*0.6,trunkH+leafR*0.5+Math.random()*0.6,z+Math.sin(a)*leafR*0.6);
+    scene.add(s);
+  }
+}
+
+function buildConiferTree(x,z){
+  // 針葉樹: 円錐形の重なり
+  var trunkH=2+Math.random()*2;
+  var trunkR=0.18+Math.random()*0.1;
+  var trunkMat=new THREE.MeshStandardMaterial({color:0x4a2a0a,roughness:0.95});
+  var trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkR*0.6,trunkR,trunkH,8),trunkMat);
+  trunk.position.set(x,trunkH/2,z); scene.add(trunk);
+  var treeH=14+Math.random()*6;
+  var treeR=2.5+Math.random()*0.8;
+  var darkGreens=[0x0d4a0d,0x0e5a0e,0x155515,0x0a3d0a,0x1a5a1a];
+  for(var i=0;i<5;i++){
+    var layerR=treeR*(1-i/5*0.7)*(1+Math.random()*0.08);
+    var layerH=treeH*(0.3-i*0.02);
+    var yPos=trunkH+i*(treeH*0.17);
+    var cone=new THREE.Mesh(new THREE.ConeGeometry(layerR,layerH,10),
+      new THREE.MeshStandardMaterial({color:darkGreens[i%5],roughness:0.85}));
+    cone.position.set(x,yPos,z); scene.add(cone);
+  }
+}
 function buildTree(x,z){
   var treeType=Math.floor(Math.random()*3);
   var trunkH=3+Math.random()*3;
@@ -942,27 +1159,69 @@ function buildLake(x,z){
 }
 
 function buildFountain(x,z){
-  var FS=TILE*2;
-  var baseMat=new THREE.MeshStandardMaterial({color:0x999999,roughness:0.3,metalness:0.7});
-  var plazaMat=new THREE.MeshStandardMaterial({color:0xc8c0b0,roughness:0.7});
-  var plaza=new THREE.Mesh(new THREE.CircleGeometry(FS*0.6,24),plazaMat);
+  var FS=TILE*1.8;
+  var baseMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.3,metalness:0.7,envMapIntensity:0.0});
+  var stoneMat=new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:0.6,metalness:0.2,envMapIntensity:0.0});
+  var waterMat=new THREE.MeshStandardMaterial({color:0x66bbff,roughness:0.02,metalness:0.3,transparent:true,opacity:0.82,envMapIntensity:0.0});
+  // 広場
+  var plaza=new THREE.Mesh(new THREE.CircleGeometry(FS*0.65,32),stoneMat);
   plaza.rotation.x=-Math.PI/2;plaza.position.set(x,0.1,z);scene.add(plaza);
-  var base=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.38,FS*0.4,1.5,20),baseMat);
-  base.position.set(x,0.75,z);scene.add(base);
-  var basin=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.35,FS*0.3,0.8,20),
-    new THREE.MeshStandardMaterial({color:0x88ccff,roughness:0.02,metalness:0.5,transparent:true,opacity:0.8}));
-  basin.position.set(x,1.5,z);scene.add(basin);
-  var pillar=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,4,10),baseMat);
-  pillar.position.set(x,3,z);scene.add(pillar);
-  var fl=new THREE.PointLight(0x44aaff,2.5,FS*3);fl.position.set(x,5,z);scene.add(fl);
-  var dropMat=new THREE.MeshBasicMaterial({color:0x88ddff,transparent:true,opacity:0.75});
-  for(var fi=0;fi<24;fi++){
-    var a=fi/24*Math.PI*2;
-    var drop=new THREE.Mesh(new THREE.SphereGeometry(0.12,4,4),dropMat);
-    drop.position.set(x+Math.cos(a)*0.3,7.5,z+Math.sin(a)*0.3);
-    drop.userData={isFountainDrop:true,fx:x,fz:z,angle:a,radius:0.4+Math.random()*1.2,
-      speed:0.6+Math.random()*0.8,phase:Math.random()*Math.PI*2,height:3+Math.random()*3};
+  // 外側水盤（大）
+  var outerRim=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.42,FS*0.45,0.5,24),stoneMat);
+  outerRim.position.set(x,0.35,z);scene.add(outerRim);
+  var outerWater=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.38,FS*0.38,0.2,24),waterMat);
+  outerWater.position.set(x,0.6,z);scene.add(outerWater);
+  // 中段台座
+  var midBase=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.18,FS*0.2,1.2,16),stoneMat);
+  midBase.position.set(x,1.0,z);scene.add(midBase);
+  // 中段水盤
+  var midRim=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.16,FS*0.18,0.3,16),stoneMat);
+  midRim.position.set(x,1.75,z);scene.add(midRim);
+  var midWater=new THREE.Mesh(new THREE.CylinderGeometry(FS*0.13,FS*0.13,0.15,16),waterMat);
+  midWater.position.set(x,1.95,z);scene.add(midWater);
+  // 中央支柱
+  var pillar=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.3,3.5,10),baseMat);
+  pillar.position.set(x,3.0,z);scene.add(pillar);
+  // 噴水ライト
+  var fl=new THREE.PointLight(0x44aaff,8,FS*4);fl.position.set(x,2,z);scene.add(fl);
+  var fl2=new THREE.PointLight(0x88ddff,5,FS*6);fl2.position.set(x,8,z);scene.add(fl2);
+  var dropMat=new THREE.MeshBasicMaterial({color:0xaaeeff,transparent:true,opacity:0.0});
+  var dropMat2=new THREE.MeshBasicMaterial({color:0x88ccff,transparent:true,opacity:0.0});
+  // 中央: 高く吹き上がる水柱（16本）
+  for(var fi=0;fi<16;fi++){
+    var a=fi/16*Math.PI*2;
+    var drop=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.12,0.5,4),dropMat);
+    drop.position.set(x+Math.cos(a)*0.2,4.7,z+Math.sin(a)*0.2);
+    drop.userData={isFountainDrop:true,fx:x,fz:z,angle:a,
+      radius:0.2+Math.random()*0.5, // 内側: ほぼ垂直
+      phase:fi/16*Math.PI*2,
+      height:8+Math.random()*4,  // 高く！
+      baseY:4.7, dropType:'center'};
     scene.add(drop);riverMeshes.push(drop);
+  }
+  // 中段: 斜めに広がる（24本）
+  for(var fi=0;fi<24;fi++){
+    var a2=fi/24*Math.PI*2;
+    var drop2=new THREE.Mesh(new THREE.SphereGeometry(0.1,4,4),dropMat);
+    drop2.position.set(x+Math.cos(a2)*0.5,2.0,z+Math.sin(a2)*0.5);
+    drop2.userData={isFountainDrop:true,fx:x,fz:z,angle:a2,
+      radius:0.8+Math.random()*1.5,
+      phase:fi/24*Math.PI*2+0.5,
+      height:4+Math.random()*3,
+      baseY:1.9, dropType:'mid'};
+    scene.add(drop2);riverMeshes.push(drop2);
+  }
+  // 外周: 落水（32本）
+  for(var fi=0;fi<32;fi++){
+    var a3=fi/32*Math.PI*2;
+    var drop3=new THREE.Mesh(new THREE.SphereGeometry(0.08,4,4),dropMat2);
+    drop3.position.set(x+Math.cos(a3)*FS*0.35,1.0,z+Math.sin(a3)*FS*0.35);
+    drop3.userData={isFountainDrop:true,fx:x,fz:z,angle:a3,
+      radius:FS*0.35,
+      phase:fi/32*Math.PI*2,
+      height:1.5+Math.random()*1.5,
+      baseY:0.8, dropType:'outer'};
+    scene.add(drop3);riverMeshes.push(drop3);
   }
 }
 
@@ -1052,22 +1311,68 @@ function addGrowableBuilding(x,z,w,d2,baseH){
   if(!growRegistry[key]) growRegistry[key]={level:1,meshes:[]};
   var d=growRegistry[key];
   removeMeshGroup(d.meshes); d.meshes=[];
-  var floorH=TILE;
+  var floorH=8; // mkBと同じ高さに統一
   var h=floorH*d.level;
+  var bw=TILE, bd=TILE; // 隙間なくぴったり隣接
   var meshes=[];
   var pal=buildingPalettes[Math.floor(Math.random()*buildingPalettes.length)];
-  var bMat=new THREE.MeshStandardMaterial({color:pal.base,roughness:0.35,metalness:0.65});
-  var glassMat2=new THREE.MeshStandardMaterial({color:pal.glass,roughness:0.05,metalness:0.8,transparent:true,opacity:0.65});
-  var body=new THREE.Mesh(new THREE.BoxGeometry(TILE*0.85,h,TILE*0.85),bMat);
+  var bMat=new THREE.MeshStandardMaterial({color:pal.base,roughness:0.88,metalness:0.0,envMapIntensity:0.0});
+  var glassMat2=new THREE.MeshStandardMaterial({color:pal.glass,roughness:0.3,metalness:0.05,transparent:true,opacity:0.55,envMapIntensity:0.0});
+  var trimMat=new THREE.MeshStandardMaterial({color:pal.trim,roughness:0.7,metalness:0.2});
+
+  // メインボディ（mkBと同じ構成）
+  var body=new THREE.Mesh(new THREE.BoxGeometry(bw,h,bd),bMat);
   body.castShadow=true;body.receiveShadow=true;
   body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
-  var gw=new THREE.Mesh(new THREE.BoxGeometry(TILE*0.82,h*0.95,0.3),glassMat2);
-  gw.position.set(x,h/2,z+TILE*0.43);scene.add(gw);meshes.push(gw);
-  var gb=new THREE.Mesh(new THREE.BoxGeometry(TILE*0.82,h*0.95,0.3),glassMat2);
-  gb.position.set(x,h/2,z-TILE*0.43);scene.add(gb);meshes.push(gb);
-  var hw=TILE*0.425;
-  var winW=TILE*0.18, winH=floorH*0.45;
-  var offsets=[-TILE*0.18, TILE*0.18];
+
+  // ガラスカーテンウォール前後
+  var gw=new THREE.Mesh(new THREE.BoxGeometry(bw*0.96,h*0.95,0.5),glassMat2);
+  gw.position.set(x,h/2,z+bd/2+0.1);scene.add(gw);meshes.push(gw);
+  var gb=new THREE.Mesh(new THREE.BoxGeometry(bw*0.96,h*0.95,0.5),glassMat2);
+  gb.position.set(x,h/2,z-bd/2-0.1);scene.add(gb);meshes.push(gb);
+
+  // コーナートリム
+  [bw/2,-bw/2].forEach(function(cx){
+    [bd/2,-bd/2].forEach(function(cz){
+      var trim=new THREE.Mesh(new THREE.BoxGeometry(1.2,h,1.2),trimMat);
+      trim.position.set(x+cx,h/2,z+cz);scene.add(trim);meshes.push(trim);
+    });
+  });
+
+  // 水平スラブライン
+  var floors=Math.max(1,Math.round(h/floorH));
+  for(var fi=1;fi<floors;fi++){
+    var slab=new THREE.Mesh(new THREE.BoxGeometry(bw+0.8,0.5,bd+0.8),trimMat);
+    slab.position.set(x,fi*floorH,z);scene.add(slab);meshes.push(slab);
+  }
+
+  // 屋上設備
+  var roofMat2=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.7,metalness:0.4});
+  var roofBox=new THREE.Mesh(new THREE.BoxGeometry(bw*0.3,Math.random()*4+3,bd*0.3),roofMat2);
+  roofBox.position.set(x+(Math.random()-0.5)*bw*0.3,h+roofBox.geometry.parameters.height/2,z+(Math.random()-0.5)*bd*0.3);
+  scene.add(roofBox);meshes.push(roofBox);
+  var antennaM=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,6+Math.random()*4,4),trimMat);
+  antennaM.position.set(x+(Math.random()-0.5)*bw*0.4,h+antennaM.geometry.parameters.height/2,z+(Math.random()-0.5)*bd*0.4);
+  scene.add(antennaM);meshes.push(antennaM);
+  // 6階以上: アンテナ先端にビーコン（赤点滅）
+  if(d.level >= 5){
+    var antH=antennaM.geometry.parameters.height;
+    var antX=antennaM.position.x;
+    var antZ=antennaM.position.z;
+    var antTopY=h+antH; // アンテナの先端Y座標
+    var beaconCoreMat=new THREE.MeshBasicMaterial({color:0xff2200,transparent:true,opacity:0.9});
+    var beaconGlowMat=new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.5});
+    var beaconCore=new THREE.Mesh(new THREE.SphereGeometry(0.45,8,8),beaconCoreMat);
+    beaconCore.position.set(antX,antTopY,antZ);scene.add(beaconCore);meshes.push(beaconCore);
+    var beaconGlow=new THREE.Mesh(new THREE.SphereGeometry(1.1,8,8),beaconGlowMat);
+    beaconGlow.position.set(antX,antTopY,antZ);scene.add(beaconGlow);meshes.push(beaconGlow);
+    beaconMeshes.push({core:beaconCore,glow:beaconGlow,phase:Math.random()*Math.PI*2});
+  }
+
+  // 窓（夜間点灯）
+  var winW=bw*0.18, winH=floorH*0.45;
+  var hw=bd/2+0.55;
+  var offsets=[-bw*0.18, bw*0.18];
   var wm;
   for(var f=0;f<d.level;f++){
     var fy=f*floorH+floorH*0.5;
@@ -1081,7 +1386,7 @@ function addGrowableBuilding(x,z,w,d2,baseH){
         windowMeshes.push({mesh:wm,rand:Math.random()});
       });
     });
-    [hw,-hw].forEach(function(fx,fi){
+    [bw/2+0.55,-(bw/2+0.55)].forEach(function(fx,fi){
       offsets.forEach(function(oz){
         wm=new THREE.Mesh(new THREE.PlaneGeometry(winW,winH),
           new THREE.MeshBasicMaterial({color:0x99ddff,transparent:true,opacity:0.0}));
@@ -1095,48 +1400,262 @@ function addGrowableBuilding(x,z,w,d2,baseH){
   d.meshes=meshes;
 }
 
+
+function addGrowableGlassBuilding(x,z){
+  var key=growKey(x,z,'glassbuilding');
+  if(!growRegistry[key]) growRegistry[key]={level:1,meshes:[]};
+  var d=growRegistry[key];
+  removeMeshGroup(d.meshes); d.meshes=[];
+  var floorH=8;
+  var h=floorH*d.level;
+  var bw=TILE, bd=TILE;
+  var meshes=[];
+  // 全面ガラス（わずかにグリーン or ブルーの反射色）
+  var glassColors=[0x88ccdd,0x99ddcc,0xaaccee,0x77bbcc];
+  var gc=glassColors[Math.floor(Math.random()*glassColors.length)];
+  var fullGlassMat=new THREE.MeshStandardMaterial({color:gc,roughness:0.05,metalness:0.1,transparent:true,opacity:0.65,envMapIntensity:0.0});
+  var trimMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.7,metalness:0.3,envMapIntensity:0.0});
+  // 4面ガラスカーテンウォール
+  var faceData=[[0,bd/2+0.1,bw,h,0],[0,-bd/2-0.1,bw,h,Math.PI],[bw/2+0.1,0,bd,h,Math.PI/2],[-bw/2-0.1,0,bd,h,-Math.PI/2]];
+  faceData.forEach(function(fd){
+    var face=new THREE.Mesh(new THREE.BoxGeometry(fd[2],fd[3],0.4),fullGlassMat);
+    face.position.set(x+fd[0],h/2,z+fd[1]);
+    face.rotation.y=fd[4];
+    scene.add(face);meshes.push(face);
+  });
+  // 構造コア
+  var coreMat=new THREE.MeshStandardMaterial({color:0x444444,roughness:0.8,metalness:0.1,envMapIntensity:0.0});
+  var core=new THREE.Mesh(new THREE.BoxGeometry(bw*0.2,h,bd*0.2),coreMat); // 2/3サイズ
+  core.position.set(x,h/2,z);scene.add(core);meshes.push(core);
+  // 水平フレームライン
+  var floors=Math.max(1,Math.round(h/floorH));
+  for(var fi=0;fi<=floors;fi++){
+    var slab=new THREE.Mesh(new THREE.BoxGeometry(bw+0.4,0.35,bd+0.4),trimMat);
+    slab.position.set(x,fi*floorH,z);scene.add(slab);meshes.push(slab);
+  }
+  // コーナー柱
+  [bw/2,-bw/2].forEach(function(cx){
+    [bd/2,-bd/2].forEach(function(cz){
+      var col=new THREE.Mesh(new THREE.BoxGeometry(0.8,h,0.8),trimMat);
+      col.position.set(x+cx,h/2,z+cz);scene.add(col);meshes.push(col);
+    });
+  });
+  // 窓（全面発光）
+  var winW=bw*0.2, winH=floorH*0.6;
+  var wFaceData=[[0,bd/2+0.55,0],[0,-bd/2-0.55,Math.PI],[bw/2+0.55,0,Math.PI/2],[-bw/2-0.55,0,-Math.PI/2]];
+  for(var f=0;f<d.level;f++){
+    var fy=f*floorH+floorH*0.5;
+    wFaceData.forEach(function(wfd){
+      for(var wi=-2;wi<=2;wi++){
+        var wm=new THREE.Mesh(new THREE.PlaneGeometry(winW,winH),
+          new THREE.MeshBasicMaterial({color:0xaaddff,transparent:true,opacity:0.0}));
+        wm.rotation.y=wfd[2];
+        var ox=(wfd[2]===0||wfd[2]===Math.PI)?wi*(bw*0.18):0;
+        var oz=(Math.abs(wfd[2])===Math.PI/2)?wi*(bd*0.18):0;
+        wm.position.set(x+wfd[0]+ox,fy,z+wfd[1]+oz);
+        scene.add(wm);meshes.push(wm);
+        windowMeshes.push({mesh:wm,rand:Math.random()});
+      }
+    });
+  }
+  // 屋上設備
+  var roofMat2=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.7,metalness:0.1,envMapIntensity:0.0});
+  var roofBox=new THREE.Mesh(new THREE.BoxGeometry(bw*0.25,4,bd*0.25),roofMat2);
+  roofBox.position.set(x,h+2,z);scene.add(roofBox);meshes.push(roofBox);
+  // アンテナ
+  var antH2=5+Math.random()*3;
+  var ant2=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.12,antH2,6),
+    new THREE.MeshStandardMaterial({color:0x888888,roughness:0.5,envMapIntensity:0.0}));
+  ant2.position.set(x,h+4+antH2/2,z);scene.add(ant2);meshes.push(ant2);
+  // 5階以上でビーコン
+  if(d.level >= 5){
+    var bcMat1=new THREE.MeshBasicMaterial({color:0xff2200,transparent:true,opacity:0.9});
+    var bcMat2=new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.5});
+    var bc1=new THREE.Mesh(new THREE.SphereGeometry(0.45,8,8),bcMat1);
+    bc1.position.set(x,h+4+antH2,z);scene.add(bc1);meshes.push(bc1);
+    var bc2=new THREE.Mesh(new THREE.SphereGeometry(1.1,8,8),bcMat2);
+    bc2.position.set(x,h+4+antH2,z);scene.add(bc2);meshes.push(bc2);
+    beaconMeshes.push({core:bc1,glow:bc2,phase:Math.random()*Math.PI*2});
+  }
+  d.meshes=meshes;
+}
+
+function addRicePaddy(cx, cz){
+  // 2マス（TILE×2）で一枚の田んぼ、中央の区切りなし
+  var W = TILE;       // 横幅
+  var L = TILE * 2;  // 縦幅（2マス分）
+  var meshes=[];
+  var waterMat=new THREE.MeshStandardMaterial({color:0x4a8aaa,roughness:0.02,metalness:0.0,transparent:true,opacity:0.78,envMapIntensity:0.0});
+  var mudMat=new THREE.MeshStandardMaterial({color:0x8a6a3a,roughness:0.98,metalness:0.0,envMapIntensity:0.0});
+  var ridgeMat=new THREE.MeshStandardMaterial({color:0x6a8a2a,roughness:0.95,metalness:0.0,envMapIntensity:0.0});
+  var riceMat=new THREE.MeshStandardMaterial({color:0x88cc44,roughness:0.9,metalness:0.0,envMapIntensity:0.0});
+  // 泥底面（1枚）
+  var mud=new THREE.Mesh(new THREE.PlaneGeometry(W-0.6, L-0.6), mudMat);
+  mud.rotation.x=-Math.PI/2; mud.position.set(cx, 0.04, cz);
+  scene.add(mud); meshes.push(mud);
+  // 水面（1枚）
+  var water=new THREE.Mesh(new THREE.PlaneGeometry(W-0.8, L-0.8), waterMat);
+  water.rotation.x=-Math.PI/2; water.position.set(cx, 0.10, cz);
+  scene.add(water); meshes.push(water);
+  // 畦（あぜ）: 外周4辺のみ（中央区切りなし）
+  var rw=0.5, rh=0.22;
+  // 上下
+  [cz-L/2+rw/2, cz+L/2-rw/2].forEach(function(rz){
+    var r=new THREE.Mesh(new THREE.BoxGeometry(W, rh, rw), ridgeMat);
+    r.position.set(cx, rh/2, rz); scene.add(r); meshes.push(r);
+  });
+  // 左右
+  [cx-W/2+rw/2, cx+W/2-rw/2].forEach(function(rx){
+    var r=new THREE.Mesh(new THREE.BoxGeometry(rw, rh, L), ridgeMat);
+    r.position.set(rx, rh/2, cz); scene.add(r); meshes.push(r);
+  });
+  // 稲（全体にグリッド配置）
+  var cols=4, rows=8;
+  for(var ri=1; ri<=cols; ri++){
+    for(var rj=1; rj<=rows; rj++){
+      var rx2 = cx - W/2 + ri*(W/(cols+1));
+      var rz2 = cz - L/2 + rj*(L/(rows+1));
+      var riceH = 0.5 + Math.random()*0.3;
+      var rice=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.09,riceH,4), riceMat);
+      rice.position.set(rx2, riceH/2+0.12, rz2);
+      scene.add(rice); meshes.push(rice);
+    }
+  }
+  return meshes;
+}
 function addGrowableSchool(x,z){
   var key=growKey(x,z,'school');
   if(!growRegistry[key]) growRegistry[key]={level:1,meshes:[],maxLevel:5};
   var d=growRegistry[key];
   removeMeshGroup(d.meshes); d.meshes=[];
   var lv=d.level;
-  var sw=TILE*1.8;
-  var floorH=TILE*0.9;
-  var h=floorH*lv;
   var meshes=[];
-  var wMat=new THREE.MeshStandardMaterial({color:0xd4c8b0,roughness:0.8});
-  var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.6),wMat);
-  body.castShadow=true;body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
-  var roofMat=new THREE.MeshStandardMaterial({color:0x7a8a6a,roughness:0.7});
-  var roof=new THREE.Mesh(new THREE.BoxGeometry(sw+0.5,0.5,sw*0.6+0.5),roofMat);
-  roof.position.set(x,h+0.25,z);scene.add(roof);meshes.push(roof);
+  // レベル別テーマ
+  var themes=[null,
+    {name:'小学校',  wall:0xe8d8b0,roof:0xcc6633,trim:0xaa5522,w:TILE*2.0,floors:2,style:'primary'},
+    {name:'中学校',  wall:0xd8d0c0,roof:0x557766,trim:0x446655,w:TILE*2.2,floors:3,style:'middle'},
+    {name:'高等学校',wall:0xc8c8c8,roof:0x445588,trim:0x334477,w:TILE*2.5,floors:4,style:'high'},
+    {name:'大学',    wall:0xd4ccaa,roof:0x884422,trim:0x773311,w:TILE*3.0,floors:5,style:'univ'},
+    {name:'大学院',  wall:0xf0eedd,roof:0x222244,trim:0x111133,w:TILE*3.2,floors:6,style:'grad'},
+  ];
+  var tm=themes[lv];
+  var sw=tm.w, floorH=TILE*0.75, h=floorH*tm.floors;
+  var wMat=new THREE.MeshStandardMaterial({color:tm.wall,roughness:0.8,envMapIntensity:0.0});
+  var roofMat=new THREE.MeshStandardMaterial({color:tm.roof,roughness:0.7,envMapIntensity:0.0});
+  var trimMat=new THREE.MeshStandardMaterial({color:tm.trim,roughness:0.6,envMapIntensity:0.0});
   var winMat2=new THREE.MeshBasicMaterial({color:0x99ccff,transparent:true,opacity:0.0});
-  for(var f=0;f<lv;f++){
-    for(var wi=-2;wi<=2;wi++){
-      if(wi===0) continue;
-      var w2=new THREE.Mesh(new THREE.PlaneGeometry(sw*0.12,floorH*0.5),winMat2);
-      w2.position.set(x+wi*(sw/5),f*floorH+floorH*0.55,z+sw*0.305);
-      scene.add(w2);meshes.push(w2);
-      windowMeshes.push({mesh:w2,rand:Math.random()});
-    }
+
+  // ===== 小学校(lv1): 低層・オレンジ屋根・シンプル =====
+  if(lv===1){
+    var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.55),wMat);
+    body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
+    // 三角屋根
+    var roofG=new THREE.ConeGeometry(sw*0.75,h*0.3,4);
+    var roofM=new THREE.Mesh(roofG,roofMat);
+    roofM.position.set(x,h+h*0.15,z);roofM.rotation.y=Math.PI/4;
+    scene.add(roofM);meshes.push(roofM);
+    // 玄関ポーチ
+    var porch=new THREE.Mesh(new THREE.BoxGeometry(sw*0.28,h*0.55,sw*0.12),trimMat);
+    porch.position.set(x,h*0.27,z+sw*0.28);scene.add(porch);meshes.push(porch);
+    // 時計
+    var clock=new THREE.Mesh(new THREE.CircleGeometry(sw*0.07,16),new THREE.MeshBasicMaterial({color:0xffffff}));
+    clock.position.set(x,h*0.85,z+sw*0.28);scene.add(clock);meshes.push(clock);
   }
-  for(var f=0;f<lv;f++){
-    for(var wi=-2;wi<=2;wi++){
-      if(Math.abs(wi)<1) continue;
-      var wb=new THREE.Mesh(new THREE.PlaneGeometry(sw*0.1,floorH*0.45),winMat2);
-      wb.rotation.y=Math.PI;
-      wb.position.set(x+wi*(sw/5),f*floorH+floorH*0.55,z-sw*0.305);
-      scene.add(wb);meshes.push(wb);
-      windowMeshes.push({mesh:wb,rand:Math.random()});
-    }
+  // ===== 中学校(lv2): 3階・グレー屋根・左右対称 =====
+  else if(lv===2){
+    var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.5),wMat);
+    body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
+    var roof=new THREE.Mesh(new THREE.BoxGeometry(sw+0.5,0.5,sw*0.5+0.5),roofMat);
+    roof.position.set(x,h+0.25,z);scene.add(roof);meshes.push(roof);
+    // 中央塔
+    var tower=new THREE.Mesh(new THREE.BoxGeometry(sw*0.22,h*1.2,sw*0.22),trimMat);
+    tower.position.set(x,h*0.6,z);scene.add(tower);meshes.push(tower);
+    var twRoof=new THREE.Mesh(new THREE.ConeGeometry(sw*0.14,h*0.2,4),roofMat);
+    twRoof.position.set(x,h*1.2+h*0.1,z);twRoof.rotation.y=Math.PI/4;
+    scene.add(twRoof);meshes.push(twRoof);
+    var porch=new THREE.Mesh(new THREE.BoxGeometry(sw*0.32,h*0.4,sw*0.12),trimMat);
+    porch.position.set(x,h*0.2,z+sw*0.26);scene.add(porch);meshes.push(porch);
   }
-  var clockFace=new THREE.Mesh(new THREE.CircleGeometry(sw*0.065,16),new THREE.MeshBasicMaterial({color:0xffffff}));
-  clockFace.position.set(x,h*0.82,z+sw*0.31);scene.add(clockFace);meshes.push(clockFace);
-  if(lv>=2){
-    var ent=new THREE.Mesh(new THREE.BoxGeometry(sw*0.22,h*0.65,sw*0.1),
-      new THREE.MeshStandardMaterial({color:0x8a9a7a,roughness:0.6}));
-    ent.position.set(x,h*0.32,z+sw*0.33);scene.add(ent);meshes.push(ent);
+  // ===== 高等学校(lv3): 4階・青屋根・モダン =====
+  else if(lv===3){
+    var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.5),wMat);
+    body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
+    // 水平スラブ
+    for(var fi=1;fi<=tm.floors;fi++){
+      var slab=new THREE.Mesh(new THREE.BoxGeometry(sw+0.8,0.35,sw*0.5+0.8),trimMat);
+      slab.position.set(x,fi*floorH,z);scene.add(slab);meshes.push(slab);
+    }
+    // 屋上パラペット
+    var parapet=new THREE.Mesh(new THREE.BoxGeometry(sw+0.4,0.8,sw*0.5+0.4),roofMat);
+    parapet.position.set(x,h+0.4,z);scene.add(parapet);meshes.push(parapet);
+    // 玄関ガラス張り
+    var glassMat=new THREE.MeshStandardMaterial({color:0x88ccee,roughness:0.1,metalness:0.1,transparent:true,opacity:0.6,envMapIntensity:0.0});
+    var ent=new THREE.Mesh(new THREE.BoxGeometry(sw*0.38,h*0.5,sw*0.1),glassMat);
+    ent.position.set(x,h*0.25,z+sw*0.25+sw*0.05);scene.add(ent);meshes.push(ent);
+  }
+  // ===== 大学(lv4): 5階・赤レンガ風・カレッジ =====
+  else if(lv===4){
+    // メイン棟
+    var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.45),wMat);
+    body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
+    // 左右翼棟
+    [-sw*0.48,sw*0.48].forEach(function(wx){
+      var wing=new THREE.Mesh(new THREE.BoxGeometry(sw*0.35,h*0.7,sw*0.45),wMat);
+      wing.position.set(x+wx,h*0.7*0.5,z);scene.add(wing);meshes.push(wing);
+    });
+    // 中央時計塔
+    var tower=new THREE.Mesh(new THREE.BoxGeometry(sw*0.2,h*1.4,sw*0.2),trimMat);
+    tower.position.set(x,h*0.7,z);scene.add(tower);meshes.push(tower);
+    var twRoof2=new THREE.Mesh(new THREE.ConeGeometry(sw*0.13,h*0.25,4),roofMat);
+    twRoof2.position.set(x,h*1.4+h*0.12,z);twRoof2.rotation.y=Math.PI/4;
+    scene.add(twRoof2);meshes.push(twRoof2);
+    var clock2=new THREE.Mesh(new THREE.CircleGeometry(sw*0.08,16),new THREE.MeshBasicMaterial({color:0xffffff}));
+    clock2.position.set(x,h*1.2,z+sw*0.11);scene.add(clock2);meshes.push(clock2);
+    // アーチ型玄関
+    var archMat2=new THREE.MeshStandardMaterial({color:tm.trim,roughness:0.6,envMapIntensity:0.0});
+    var arch2=new THREE.Mesh(new THREE.CylinderGeometry(sw*0.12,sw*0.12,sw*0.5,16,1,false,0,Math.PI),archMat2);
+    arch2.rotation.z=Math.PI/2;arch2.position.set(x,h*0.22,z+sw*0.23);
+    scene.add(arch2);meshes.push(arch2);
+  }
+  // ===== 大学院(lv5): 6階・白×紺・現代建築 =====
+  else if(lv===5){
+    var body=new THREE.Mesh(new THREE.BoxGeometry(sw,h,sw*0.42),wMat);
+    body.position.set(x,h/2,z);scene.add(body);meshes.push(body);
+    // 全面ガラスカーテン
+    var gradGlass=new THREE.MeshStandardMaterial({color:0x88bbdd,roughness:0.05,metalness:0.1,transparent:true,opacity:0.55,envMapIntensity:0.0});
+    var glassFront=new THREE.Mesh(new THREE.BoxGeometry(sw*0.95,h*0.95,0.4),gradGlass);
+    glassFront.position.set(x,h*0.5,z+sw*0.22);scene.add(glassFront);meshes.push(glassFront);
+    // 縦フィン
+    for(var fi2=0;fi2<5;fi2++){
+      var fin=new THREE.Mesh(new THREE.BoxGeometry(0.4,h,sw*0.1),trimMat);
+      fin.position.set(x-sw*0.4+fi2*(sw*0.2),h/2,z);
+      scene.add(fin);meshes.push(fin);
+    }
+    // 屋上テラス
+    var terrace=new THREE.Mesh(new THREE.BoxGeometry(sw*1.05,0.4,sw*0.48),trimMat);
+    terrace.position.set(x,h+0.2,z);scene.add(terrace);meshes.push(terrace);
+    // 鉄骨フレーム
+    var frameMat=new THREE.MeshStandardMaterial({color:0x222244,roughness:0.4,metalness:0.8,envMapIntensity:0.0});
+    [sw*0.48,-sw*0.48].forEach(function(fx2){
+      var pillar2=new THREE.Mesh(new THREE.BoxGeometry(0.6,h+1,0.6),frameMat);
+      pillar2.position.set(x+fx2,h*0.5,z);scene.add(pillar2);meshes.push(pillar2);
+    });
+    // シンボルオブジェ（球体）
+    var obelisk=new THREE.Mesh(new THREE.SphereGeometry(sw*0.08,12,12),
+      new THREE.MeshStandardMaterial({color:0xccddff,roughness:0.1,metalness:0.9,envMapIntensity:0.0}));
+    obelisk.position.set(x,h+sw*0.12,z);scene.add(obelisk);meshes.push(obelisk);
+  }
+
+  // 共通: 窓
+  var winRows=tm.floors, winCols=4;
+  for(var f=0;f<winRows;f++){
+    for(var wi=-Math.floor(winCols/2);wi<=Math.floor(winCols/2);wi++){
+      if(wi===0 && winCols%2===0) continue;
+      var wm2=new THREE.Mesh(new THREE.PlaneGeometry(sw*0.12,floorH*0.48),winMat2);
+      wm2.position.set(x+wi*(sw/(winCols+1)),f*floorH+floorH*0.55,z+sw*0.22+0.3);
+      scene.add(wm2);meshes.push(wm2);
+      windowMeshes.push({mesh:wm2,rand:Math.random()});
+    }
   }
   d.meshes=meshes;
 }
@@ -1164,7 +1683,7 @@ function buildGym(x,z){
 
 function buildSchoolyard(x,z){
   var sy=TILE*2;
-  var groundMat=new THREE.MeshStandardMaterial({color:0xd4c89a,roughness:0.95});
+  var groundMat=new THREE.MeshStandardMaterial({color:0xd4c89a,roughness:1.0,metalness:0.0,envMapIntensity:0.0});
   var ground=new THREE.Mesh(new THREE.PlaneGeometry(sy,sy),groundMat);
   ground.rotation.x=-Math.PI/2;ground.position.set(x,0.12,z);scene.add(ground);
   var lineMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.5});
@@ -1172,17 +1691,79 @@ function buildSchoolyard(x,z){
   line.rotation.x=-Math.PI/2;line.position.set(x,0.13,z);scene.add(line);
 }
 
+
+function buildIntersection(x,z){
+  // 交差点: 4方向に道路が延びる正方形
+  var roadMat=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.9,metalness:0.0});
+  var base=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),roadMat);
+  base.rotation.x=-Math.PI/2; base.position.set(x,0.05,z); scene.add(base);
+  // 4方向のアスファルト延長（short）
+  var ext=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.9,metalness:0.0});
+  // 白線: 斜めのゼブラクロス4本
+  var crossMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.7});
+  var stripeW=TILE*0.12, stripeL=TILE*0.38;
+  // 4方向の横断歩道（各辺に3本ずつ）
+  [
+    [0, TILE*0.42, 0],             // 北側
+    [0,-TILE*0.42, 0],             // 南側
+    [ TILE*0.42, 0, Math.PI/2],    // 東側
+    [-TILE*0.42, 0, Math.PI/2],    // 西側
+  ].forEach(function(sd){
+    for(var si=-1;si<=1;si++){
+      var stripe=new THREE.Mesh(new THREE.PlaneGeometry(stripeW, stripeL), crossMat);
+      stripe.rotation.x=-Math.PI/2; stripe.rotation.z=sd[2];
+      var ox = (Math.abs(sd[2])<0.1) ? si*(stripeW*1.4) : 0;
+      var oz = (Math.abs(sd[2])<0.1) ? 0 : si*(stripeW*1.4);
+      stripe.position.set(x+sd[0]+ox, 0.06, z+sd[1]+oz);
+      scene.add(stripe);
+    }
+  });
+  // 停止線（4本）
+  var stopMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.8});
+  [[0,TILE*0.28,TILE*0.82,0.3],[0,-TILE*0.28,TILE*0.82,0.3],
+   [TILE*0.28,0,0.3,TILE*0.82],[-TILE*0.28,0,0.3,TILE*0.82]].forEach(function(sl){
+    var line=new THREE.Mesh(new THREE.PlaneGeometry(sl[2],sl[3]),stopMat);
+    line.rotation.x=-Math.PI/2; line.position.set(x+sl[0],0.07,z+sl[1]); scene.add(line);
+  });
+  // 信号機4基（横型）
+  var poleMat=new THREE.MeshStandardMaterial({color:0x444444,roughness:0.7,envMapIntensity:0.0});
+  [[TILE*0.46,TILE*0.46,0],[TILE*0.46,-TILE*0.46,Math.PI/2],
+   [-TILE*0.46,TILE*0.46,-Math.PI/2],[-TILE*0.46,-TILE*0.46,Math.PI]].forEach(function(cp){
+    var cpx=x+cp[0], cpz=z+cp[1], rot=cp[2];
+    // ポール
+    var pole=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,3.8,6),poleMat);
+    pole.position.set(cpx,1.9,cpz); scene.add(pole);
+    // 横向きボックス（3灯分: 幅0.9, 高さ0.32, 奥行0.22）
+    var box=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.32,0.22),poleMat);
+    box.position.set(cpx,3.9,cpz); box.rotation.y=rot; scene.add(box);
+    // 赤・黄・緑ランプ（横並び: x方向に-0.28/0/+0.28）
+    [[-0.28,0xff2200],[0,0xffaa00],[0.28,0x00ee44]].forEach(function(lp){
+      // ボックスのローカル座標をワールドに変換（回転を考慮）
+      var lx=Math.cos(rot)*lp[0], lzoff=Math.sin(rot)*lp[0];
+      var lmp=new THREE.Mesh(new THREE.SphereGeometry(0.1,6,6),
+        new THREE.MeshBasicMaterial({color:lp[1]}));
+      lmp.position.set(cpx+lx, 3.9, cpz+lzoff); scene.add(lmp);
+    });
+  });
+}
 function buildTennisCourt(x,z){
-  var cMat=new THREE.MeshStandardMaterial({color:0x2266aa,roughness:0.7});
+  // コート面: 緑
+  var cMat=new THREE.MeshStandardMaterial({color:0x2a7a2a,roughness:0.8,envMapIntensity:0.0});
   var court=new THREE.Mesh(new THREE.PlaneGeometry(TILE*1.2,TILE*2),cMat);
   court.rotation.x=-Math.PI/2;court.position.set(x,0.13,z);scene.add(court);
   var lMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.8});
-  [[0,0,TILE*1.2,0.25],[TILE*0.55,0,0.25,TILE*2],[-TILE*0.55,0,0.25,TILE*2],
-   [0,TILE*0.5,TILE*1.2,0.25],[0,-TILE*0.5,TILE*1.2,0.25]].forEach(function(_a){
+  // ライン: 外周4本 + サイドライン2本のみ（中央横線なし）
+  [[0,0,TILE*1.2,0.25],           // 外周横（中央）→ 実は外周なのでOK
+   [0, TILE,TILE*1.2,0.25],       // 上端
+   [0,-TILE,TILE*1.2,0.25],       // 下端
+   [ TILE*0.55,0,0.25,TILE*2],    // 右縦
+   [-TILE*0.55,0,0.25,TILE*2]     // 左縦
+  ].forEach(function(_a){
     var lx=_a[0],lz=_a[1],lw=_a[2],ll=_a[3];
     var l=new THREE.Mesh(new THREE.PlaneGeometry(lw,ll),lMat);
     l.rotation.x=-Math.PI/2;l.position.set(x+lx,0.14,z+lz);scene.add(l);
   });
+  // ネット（中央）
   var netMat=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:0.5,transparent:true,opacity:0.6});
   var net=new THREE.Mesh(new THREE.BoxGeometry(TILE*1.25,0.9,0.1),netMat);
   net.position.set(x,0.5,z);scene.add(net);
@@ -1218,12 +1799,95 @@ function spawnPerson(startX,startZ){
   rLeg.position.set(0.18,0.7,0);group.add(rLeg);
   group.position.set(startX,0.42,startZ);
   scene.add(group);
-  var personObj={group:group,type:'person',speed:0.12+Math.random()*0.1,
+  var personObj={group:group,type:'person',speed:0.028+Math.random()*0.018,
     dir:Math.random()>0.5?1:-1,axis:Math.random()>0.5?'x':'z',
-    limit:300,walkPhase:0,lLeg:lLeg,rLeg:rLeg};
+    limit:300,walkPhase:0,lLeg:lLeg,rLeg:rLeg,onRoadOnly:true}; // onRoadOnly=道路を避ける
   movingObjects.push(personObj);
   placedObjects.push({meshes:[group],type:'person',cost:BUILD_COSTS.person,x:startX,z:startZ,movingRef:personObj});
 }
+
+
+// ===== セーブ・ロード =====
+function saveCity(){
+  if(typeof scene==='undefined'||typeof playerCoins==='undefined') return;
+  try{
+    var data={coins:playerCoins,cycle:cycle||0,builds:[]};
+    placedObjects.forEach(function(o){
+      if(o.type==='car'||o.type==='bike'||o.type==='person') return;
+      data.builds.push({type:o.type,x:o.x,z:o.z});
+    });
+    var gr={};
+    Object.keys(growRegistry).forEach(function(k){ gr[k]=growRegistry[k].level; });
+    data.growLevels=gr;
+    localStorage.setItem('ignis_city_v2',JSON.stringify(data));
+    showNotif('💾 セーブ完了！ ('+data.builds.length+'棟)');
+  }catch(e){ showNotif('セーブ失敗: '+e.message); }
+}
+
+function rebuildItem(type,x,z){
+  if(type==='road'){
+    var rk=x+'_'+z; roadTiles.add(rk);
+    var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),
+      new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92,envMapIntensity:0}));
+    rm.rotation.x=-Math.PI/2; rm.position.set(x,0.08,z); scene.add(rm);
+    var yl=new THREE.Mesh(new THREE.PlaneGeometry(0.4,TILE),
+      new THREE.MeshBasicMaterial({color:0xffcc00,transparent:true,opacity:0.9}));
+    yl.rotation.x=-Math.PI/2; yl.position.set(x,0.09,z); scene.add(yl);
+  }
+  else if(type==='intersection'){ var rk2=x+'_'+z; roadTiles.add(rk2); buildIntersection(x,z); }
+  else if(type==='streetlight'||type==='streetlightR'){ buildStreetlight(x,z,1); }
+  else if(type==='streetlightL'){ buildStreetlight(x,z,-1); }
+  else if(type==='grass'){ buildGrass(x,z); }
+  else if(type==='broadleaf'){ buildBroadleafTree(x,z); }
+  else if(type==='conifer'){ buildConiferTree(x,z); }
+  else if(type==='cherry'){ buildCherryTree(x,z); }
+  else if(type==='tree'){ buildTree(x,z); }
+  else if(type==='mountain'){ addGrowableMountain(x,z); }
+  else if(type==='river'){ buildRiver(x,z); }
+  else if(type==='lake'){ buildLake(x,z); }
+  else if(type==='fountain'){ buildFountain(x,z); }
+  else if(type==='house'){ addGrowableHouse(x,z); }
+  else if(type==='building'){ addGrowableBuilding(x,z,TILE,TILE,TILE); }
+  else if(type==='glassbuilding'){ addGrowableGlassBuilding(x,z); }
+  else if(type==='school'){ addGrowableSchool(x,z); }
+  else if(type==='gym'){ buildGym(x,z); }
+  else if(type==='schoolyard'){ buildSchoolyard(x,z); }
+  else if(type==='tennis'){ buildTennisCourt(x,z); }
+  else if(type==='baseball'){ buildBaseballField(x,z); }
+  else if(type==='paddy'){ addRicePaddy(x,z); }
+  else if(type==='bridge'){ buildBridge(x,z); }
+  else if(type==='footbridge'){ buildFootbridge(x,z); }
+}
+
+function loadCity(){
+  try{
+    var raw=localStorage.getItem('ignis_city_v2');
+    if(!raw) return false;
+    var data=JSON.parse(raw);
+    playerCoins=data.coins||5000;
+    updateCoinDisplay();
+    // growRegistryレベルを先に復元
+    if(data.growLevels){
+      Object.keys(data.growLevels).forEach(function(k){
+        if(!growRegistry[k]) growRegistry[k]={level:0,meshes:[],maxLevel:5};
+        growRegistry[k].level=data.growLevels[k];
+      });
+    }
+    var count=0;
+    if(data.builds){
+      data.builds.forEach(function(b){
+        try{ rebuildItem(b.type,b.x,b.z); count++; }catch(e){}
+      });
+    }
+    showNotif('📂 ロード完了！ '+count+'棟復元');
+    return true;
+  }catch(e){ showNotif('ロード失敗: '+e.message); return false; }
+}
+
+// 自動セーブ（60秒ごと）
+setInterval(function(){ saveCity(); }, 60000);
+// ページ離脱時セーブ
+window.addEventListener('beforeunload', function(){ saveCity(); });
 
 function initGame(){
   vel = new THREE.Vector3();
@@ -1232,7 +1896,7 @@ function initGame(){
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
   renderer.shadowMap.enabled=false;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.0;
+  renderer.toneMappingExposure=1.8;
 
   window.addEventListener('resize',function(){
     var w=window.innerWidth, h=window.innerHeight;
@@ -1258,14 +1922,15 @@ function initGame(){
   camera.position.set(0,100,160);
   ambientLight=new THREE.AmbientLight(0x1a0800,0.6);scene.add(ambientLight);
   sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(200,400,200);scene.add(sun);
-  towerLight=new THREE.PointLight(0xff4400,5,500);towerLight.position.set(0,200,0);scene.add(towerLight);
+  towerLight=new THREE.PointLight(0xff4400,0,500);towerLight.position.set(0,200,0);scene.add(towerLight); // 根本ライトをオフ
   [[0,5,0,0xff4400,2,300],[80,10,80,0xff2200,1.5,200],[-60,8,-60,0xffaa00,1.5,200]].forEach(function(_a){
     var l=new THREE.PointLight(_a[3],_a[4],_a[5]);l.position.set(_a[0],_a[1],_a[2]);scene.add(l);
   });
 
+  // 円形の大地
   var gnd=new THREE.Mesh(
-    new THREE.PlaneGeometry(8000,8000,1,1),
-    new THREE.MeshStandardMaterial({color:0xf0ede8,roughness:0.98,metalness:0.0})
+    new THREE.CircleGeometry(4000,128),
+    new THREE.MeshStandardMaterial({color:0xd4b896,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
   );
   gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
   var grid1=new THREE.GridHelper(3000,100,0xbbbbbb,0xcccccc);
@@ -1273,6 +1938,53 @@ function initGame(){
   var grid2=new THREE.GridHelper(3000,300,0xcccccc,0xdddddd);
   grid2.position.y=0.06;scene.add(grid2);
 
+
+  // 塔から150m離れた位置に高層ビル4棟
+  (function(){
+    var specs=[
+      {dx:150,  dz:0,   h:250},
+      {dx:-150, dz:0,   h:220},
+      {dx:0,    dz:150, h:240},
+      {dx:0,    dz:-150,h:250},
+    ];
+    specs.forEach(function(s){
+      var bx=s.dx, bz=s.dz;
+      var bh=s.h;
+      var flH=8;
+      var lvs=Math.round(bh/flH);
+      var bwt=TILE, bdt=TILE;
+      // コンクリート外壁
+      var wm=new THREE.MeshStandardMaterial({color:0x9aacb8,roughness:0.65,metalness:0.3,envMapIntensity:0.0});
+      var glm=new THREE.MeshStandardMaterial({color:0x88aacc,roughness:0.1,metalness:0.05,transparent:true,opacity:0.6,envMapIntensity:0.0});
+      var trm=new THREE.MeshStandardMaterial({color:0x445566,roughness:0.5,metalness:0.4,envMapIntensity:0.0});
+      var body=new THREE.Mesh(new THREE.BoxGeometry(bwt,bh,bdt),wm);
+      body.position.set(bx,bh/2,bz);scene.add(body);
+      // ガラスカーテン前後
+      var gf=new THREE.Mesh(new THREE.BoxGeometry(bwt*0.94,bh*0.94,0.4),glm);
+      gf.position.set(bx,bh/2,bz+bdt/2+0.1);scene.add(gf);
+      var gb2=new THREE.Mesh(new THREE.BoxGeometry(bwt*0.94,bh*0.94,0.4),glm);
+      gb2.position.set(bx,bh/2,bz-bdt/2-0.1);scene.add(gb2);
+      // スラブライン
+      for(var fi=1;fi<lvs;fi++){
+        var sl=new THREE.Mesh(new THREE.BoxGeometry(bwt+0.6,0.4,bdt+0.6),trm);
+        sl.position.set(bx,fi*flH,bz);scene.add(sl);
+      }
+      // アンテナ
+      var antH3=20+Math.random()*10;
+      var ant3=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.25,antH3,8),trm);
+      ant3.position.set(bx,bh+antH3/2,bz);scene.add(ant3);
+      // ビーコン（先端）
+      var bcm1=new THREE.MeshBasicMaterial({color:0xff2200,transparent:true,opacity:0.9});
+      var bcm2=new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.5});
+      var bc1=new THREE.Mesh(new THREE.SphereGeometry(0.6,8,8),bcm1);
+      bc1.position.set(bx,bh+antH3,bz);scene.add(bc1);
+      var bc2=new THREE.Mesh(new THREE.SphereGeometry(1.5,8,8),bcm2);
+      bc2.position.set(bx,bh+antH3,bz);scene.add(bc2);
+      beaconMeshes.push({core:bc1,glow:bc2,phase:Math.random()*Math.PI*2});
+    });
+  })();
+  // セーブデータがあればロード
+  setTimeout(function(){ if(!loadCity()) showNotif('🗺️ 新しい街を始めよう！'); }, 300);
   altEl=document.getElementById('alt-value');
   spdEl=document.getElementById('spd-value');
 
@@ -1286,17 +1998,206 @@ function initGame(){
     for(var rx=-200;rx<=200;rx+=TILE){ roadTiles.add(rx+'_0'); }
     for(var rz=-200;rz<=200;rz+=TILE){ roadTiles.add('0_'+rz); }
   })();
-  [[28,0,22,22,80],[-30,10,18,18,65],[12,-28,20,20,72]].forEach(function(b){mkB.apply(null,b);});
+  // 初期ビルなし（プレイヤーが自由に建設）
 
-  // Tower
-  var tower=new THREE.Mesh(new THREE.CylinderGeometry(5,8,210,8),new THREE.MeshStandardMaterial({color:0x0f0500,emissive:0x770000,emissiveIntensity:0.3,roughness:0.4,metalness:0.9}));
-  tower.position.set(0,105,0);scene.add(tower);
-  for(var i=0;i<4;i++){
-    var ring=new THREE.Mesh(new THREE.TorusGeometry(7-i*0.5,0.3,8,32),new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.6}));
-    ring.position.set(0,30+i*50,0);scene.add(ring);
+  // スカイツリー風タワー
+  var towerMat=new THREE.MeshStandardMaterial({color:0x7a9aaa,roughness:0.65,metalness:0.4,envMapIntensity:0.2});
+  var towerDarkMat=new THREE.MeshStandardMaterial({color:0x2a4a5e,roughness:0.7,metalness:0.3,envMapIntensity:0.1});
+  var towerAccentMat=new THREE.MeshStandardMaterial({color:0x9ab8cc,roughness:0.5,metalness:0.5,envMapIntensity:0.2});
+  var trussMat=new THREE.MeshStandardMaterial({color:0x5a8aaa,roughness:0.6,metalness:0.4,envMapIntensity:0.15});
+  var diagMat=new THREE.MeshStandardMaterial({color:0x6a9aaf,roughness:0.6,metalness:0.4,envMapIntensity:0.15});
+  // 展望台ミラーマテリアル（夜光る）
+  var obsMirrorMat=new THREE.MeshStandardMaterial({color:0xaaddff,roughness:0.0,metalness:1.0,envMapIntensity:2.0});
+  var obsGlassMat=new THREE.MeshStandardMaterial({color:0x99ddff,roughness:0.0,metalness:1.0,transparent:true,opacity:0.55});
+  obsGlowMat1=new THREE.MeshBasicMaterial({color:0x66bbff,transparent:true,opacity:0.0});
+  obsGlowMat2=new THREE.MeshBasicMaterial({color:0x66bbff,transparent:true,opacity:0.0});
+  towerDarkMat._obsGlow=[obsGlowMat1,obsGlowMat2];
+
+  // ===== 中心の均一な芯柱（y=0〜330）=====
+  var coreH=476;
+  var core=new THREE.Mesh(new THREE.CylinderGeometry(6,6,coreH,8),towerAccentMat);
+  core.position.set(0,coreH/2,0);scene.add(core);
+  // 芯柱を流れる光: 8個の球体が下から上へ流れる
+  var coreFlowLights=[];
+  for(var fi=0;fi<8;fi++){
+    var cf=new THREE.Mesh(new THREE.SphereGeometry(7,8,8),
+      new THREE.MeshBasicMaterial({color:0x88eeff,transparent:true,opacity:0.0}));
+    scene.add(cf);coreFlowLights.push(cf);
   }
-  topGlow=new THREE.Mesh(new THREE.SphereGeometry(4,16,16),new THREE.MeshBasicMaterial({color:0xff4400}));
-  topGlow.position.set(0,212,0);scene.add(topGlow);
+
+  // ===== 格子トラス共通関数 =====
+  function addTruss(yStart,yEnd,radius,numCols,panelH){
+    var trussH=yEnd-yStart;
+    for(var ci=0;ci<numCols;ci++){
+      var ca=ci/numCols*Math.PI*2+Math.PI/4;
+      var vCol=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,trussH,16),trussMat); // 円柱
+      vCol.position.set(Math.cos(ca)*radius,yStart+trussH/2,Math.sin(ca)*radius);
+      scene.add(vCol);
+    }
+    var numPanels=Math.floor(trussH/panelH);
+    for(var pi=0;pi<numPanels;pi++){
+      var yBot=yStart+pi*panelH;
+      var yTop=yBot+panelH;
+      var yMid=(yBot+yTop)/2;
+      for(var ci=0;ci<numCols;ci++){
+        var ca=ci/numCols*Math.PI*2+Math.PI/4;
+        var na=(ci+1)/numCols*Math.PI*2+Math.PI/4;
+        var x0=Math.cos(ca)*radius,z0=Math.sin(ca)*radius;
+        var x1=Math.cos(na)*radius,z1=Math.sin(na)*radius;
+        var dx=x1-x0,dz=z1-z0,dy=panelH;
+        var len=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        var d1=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,len,12),diagMat);
+        d1.position.set((x0+x1)/2,yMid,(z0+z1)/2);
+        d1.lookAt(new THREE.Vector3(x1,yTop,z1));d1.rotateX(Math.PI/2);scene.add(d1);
+        var d2=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,len,12),diagMat);
+        d2.position.set((x0+x1)/2,yMid,(z0+z1)/2);
+        d2.lookAt(new THREE.Vector3(x0,yTop,z0));d2.rotateX(Math.PI/2);scene.add(d2);
+        var hLen=Math.sqrt((x1-x0)*(x1-x0)+(z1-z0)*(z1-z0));
+        var hBar=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.25,hLen,12),trussMat);
+        hBar.position.set((x0+x1)/2,yBot,(z0+z1)/2);
+        hBar.lookAt(new THREE.Vector3(x1,yBot,z1));hBar.rotateX(Math.PI/2);scene.add(hBar);
+      }
+    }
+  }
+
+  // ===== 根本〜中間：24段、y=0〜350 =====
+  // 0〜12段: 細くなりながら支柱も細くなる / 13〜24段: 均一の太さ
+  var baseSegs=28, baseY0=0, baseY1=340, baseRbot=30, baseRtop=18;
+  for(var si=0;si<baseSegs;si++){
+    var t0=si/baseSegs, t1=(si+1)/baseSegs;
+    // cubic ease: 根本付近を緩やかに広げ、上部は均一に収束
+    var ease0=t0*t0*(3-2*t0); var ease0=Math.pow(t0,1.6);
+    var ease1=Math.pow(t1,1.6);
+    var r0=baseRbot+(baseRtop-baseRbot)*ease0;
+    var r1=baseRbot+(baseRtop-baseRbot)*ease1;
+    var sy0=baseY0+(baseY1-baseY0)*t0;
+    var sy1=baseY0+(baseY1-baseY0)*t1;
+    var sh=sy1-sy0;
+    var numC=6;
+    // 支柱の太さ: 0〜12段は段ごとに細く（1.2→0.5）、13〜24段は0.5で均一
+    var thick = si < 12 ? (1.2 - si*(1.2-0.5)/12) : 0.5;
+    var thickD = si < 12 ? (0.9 - si*(0.9-0.38)/12) : 0.38;
+    var thickH = si < 12 ? (0.7 - si*(0.7-0.3)/12) : 0.3;
+    // 縦支柱
+    for(var ci=0;ci<numC;ci++){
+      var ca=ci/numC*Math.PI*2;
+      var rm=(r0+r1)/2;
+      var vCol=new THREE.Mesh(new THREE.CylinderGeometry(thick,thick,sh*1.02,6),trussMat);
+      vCol.position.set(Math.cos(ca)*rm,sy0+sh/2,Math.sin(ca)*rm);
+      scene.add(vCol);
+    }
+    // ひし形X字斜め材
+    for(var ci=0;ci<numC;ci++){
+      var ca=ci/numC*Math.PI*2, na=(ci+1)/numC*Math.PI*2;
+      var x0b=Math.cos(ca)*r0,z0b=Math.sin(ca)*r0;
+      var x1b=Math.cos(na)*r1,z1b=Math.sin(na)*r1;
+      var dyb=sh;
+      var lenb=Math.sqrt((x1b-x0b)*(x1b-x0b)+dyb*dyb+(z1b-z0b)*(z1b-z0b));
+      var db=new THREE.Mesh(new THREE.CylinderGeometry(thickD,thickD,lenb,5),diagMat);
+      db.position.set((x0b+x1b)/2,(sy0+sy1)/2,(z0b+z1b)/2);
+      db.lookAt(new THREE.Vector3(x1b,sy1,z1b));db.rotateX(Math.PI/2);scene.add(db);
+      var x0c=Math.cos(na)*r0,z0c=Math.sin(na)*r0;
+      var x1c=Math.cos(ca)*r1,z1c=Math.sin(ca)*r1;
+      var lenc=Math.sqrt((x1c-x0c)*(x1c-x0c)+dyb*dyb+(z1c-z0c)*(z1c-z0c));
+      var dc=new THREE.Mesh(new THREE.CylinderGeometry(thickD,thickD,lenc,5),diagMat);
+      dc.position.set((x0c+x1c)/2,(sy0+sy1)/2,(z0c+z1c)/2);
+      dc.lookAt(new THREE.Vector3(x1c,sy1,z1c));dc.rotateX(Math.PI/2);scene.add(dc);
+      // 水平リング
+      var xh0=Math.cos(ca)*r0,zh0=Math.sin(ca)*r0;
+      var xh1=Math.cos(na)*r0,zh1=Math.sin(na)*r0;
+      var hLen=Math.sqrt((xh1-xh0)*(xh1-xh0)+(zh1-zh0)*(zh1-zh0));
+      var hb=new THREE.Mesh(new THREE.CylinderGeometry(thickH,thickH,hLen,5),trussMat);
+      hb.position.set((xh0+xh1)/2,sy0,(zh0+zh1)/2);
+      hb.lookAt(new THREE.Vector3(xh1,sy0,zh1));hb.rotateX(Math.PI/2);scene.add(hb);
+    }
+  }
+
+  // ===== 展望台1（下）: 地上360m =====
+  var obsClearMat1=new THREE.MeshStandardMaterial({color:0xaaddff,roughness:0.0,metalness:0.9,transparent:true,opacity:0.55,envMapIntensity:3.0});
+  // 展望台1（下・360m）スカイツリー形状: 底が広く上に向かって少し絞れる
+  // メイン筒（底広・上狭のテーパー）
+  // 展望台1（下・360m）: 底22m→上28m スカイツリー型（上が広がる）
+  // 下部（底22→中間28）
+  // 下展望台 (360m): 底22m→上28m (スカイツリー・テンボースデッキ型)
+  // y=340(底)〜y=376(天井) 高さ36m
+  // 下部: 底r=22→中間r=28 (高さ20m)
+  var obs1Lower=new THREE.Mesh(new THREE.CylinderGeometry(28,19,20,32),obsClearMat1);
+  obs1Lower.position.set(0,350,0);scene.add(obs1Lower); // y:340〜360
+  // 上部: 中間r=28→上r=28 均一 (高さ16m)
+  var obs1Upper2=new THREE.Mesh(new THREE.CylinderGeometry(28,28,16,32),obsClearMat1);
+  obs1Upper2.position.set(0,368,0);scene.add(obs1Upper2); // y:360〜376
+  // 底庇スラブ
+  var obs1BotSlab=new THREE.Mesh(new THREE.CylinderGeometry(20,19,2,32),towerAccentMat);
+  obs1BotSlab.position.set(0,340,0);scene.add(obs1BotSlab);
+  // 中間水平帯
+  var obs1MidBand=new THREE.Mesh(new THREE.CylinderGeometry(29,29,1.5,32),towerAccentMat);
+  obs1MidBand.position.set(0,360,0);scene.add(obs1MidBand);
+  // 天井スラブ
+  var obs1TopSlab=new THREE.Mesh(new THREE.CylinderGeometry(29,29,2,32),towerAccentMat);
+  obs1TopSlab.position.set(0,376,0);scene.add(obs1TopSlab);
+  obsGlowMat1=new THREE.MeshBasicMaterial({color:0x44bbff,transparent:true,opacity:0.0});
+  var obs1GlowMesh=new THREE.Mesh(new THREE.CylinderGeometry(29,20,38,32),obsGlowMat1);
+  obs1GlowMesh.position.set(0,357,0);scene.add(obs1GlowMesh);
+  var rotLights1=[];
+  for(var ri=0;ri<20;ri++){
+    var rl=new THREE.Mesh(new THREE.SphereGeometry(4.5,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.0}));
+    scene.add(rl);rotLights1.push(rl);
+  }
+
+  // ===== 展望台間の格子支柱: y=371〜454 =====
+  addTruss(377,470,14,4,18); // 展望台間: 半径14で統一
+
+  // ===== 展望台2（上・465m）: 底12m→上19m スカイツリー・テンボーギャラリー型 =====
+  var obsClearMat2=new THREE.MeshStandardMaterial({color:0xaaddff,roughness:0.0,metalness:0.9,transparent:true,opacity:0.55,envMapIntensity:3.0});
+  // 下部: 底r=12→上r=19 (高さ18m) y:450〜468
+  var obs2Lower=new THREE.Mesh(new THREE.CylinderGeometry(24,14,18,32),obsClearMat2);
+  obs2Lower.position.set(0,479,0);scene.add(obs2Lower);
+  // 上部: r=19 均一 (高さ12m) y:468〜480
+  var obs2Upper2=new THREE.Mesh(new THREE.CylinderGeometry(24,24,12,32),obsClearMat2);
+  obs2Upper2.position.set(0,494,0);scene.add(obs2Upper2);
+  // 底庇
+  var obs2BotSlab=new THREE.Mesh(new THREE.CylinderGeometry(15,14,2,32),towerAccentMat);
+  obs2BotSlab.position.set(0,470,0);scene.add(obs2BotSlab);
+  // 中間帯
+  var obs2MidBand=new THREE.Mesh(new THREE.CylinderGeometry(25,25,1.5,32),towerAccentMat);
+  obs2MidBand.position.set(0,488,0);scene.add(obs2MidBand);
+  // 天井スラブ
+  var obs2TopSlab=new THREE.Mesh(new THREE.CylinderGeometry(25,25,2,32),towerAccentMat);
+  obs2TopSlab.position.set(0,500,0);scene.add(obs2TopSlab);
+  obsGlowMat2=new THREE.MeshBasicMaterial({color:0x44bbff,transparent:true,opacity:0.0});
+  var obs2GlowMesh=new THREE.Mesh(new THREE.CylinderGeometry(26,15,32,32),obsGlowMat2);
+  obs2GlowMesh.position.set(0,486,0);scene.add(obs2GlowMesh);
+  var rotLights2=[];
+  for(var ri=0;ri<16;ri++){
+    var rl2=new THREE.Mesh(new THREE.SphereGeometry(4.0,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.0}));
+    scene.add(rl2);rotLights2.push(rl2);
+  }
+
+  // ===== アンテナ塔: y=476〜635 =====
+  var antenna1=new THREE.Mesh(new THREE.CylinderGeometry(1.5,3.0,100,8),towerAccentMat);
+  antenna1.position.set(0,526,0);scene.add(antenna1);
+  var antenna2=new THREE.Mesh(new THREE.CylinderGeometry(0.8,1.5,60,6),towerMat);
+  antenna2.position.set(0,606,0);scene.add(antenna2);
+  var antenna3=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.8,28,4),towerAccentMat);
+  antenna3.position.set(0,622,0);scene.add(antenna3);
+
+  // ===== 先端635mの光拡散 =====
+  topGlow=new THREE.Mesh(new THREE.SphereGeometry(6,16,16),new THREE.MeshBasicMaterial({color:0xff2200,transparent:true,opacity:1.0}));
+  topGlow.position.set(0,635,0);scene.add(topGlow);
+  var topGlow2=new THREE.Mesh(new THREE.SphereGeometry(44,16,16),new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.35,side:THREE.BackSide}));
+  topGlow2.position.set(0,635,0);scene.add(topGlow2);
+  var topGlow3=new THREE.Mesh(new THREE.SphereGeometry(100,16,16),new THREE.MeshBasicMaterial({color:0xff5500,transparent:true,opacity:0.12,side:THREE.BackSide}));
+  topGlow3.position.set(0,635,0);scene.add(topGlow3);
+  tipLightRef=new THREE.DirectionalLight(0xff4400,0);
+  tipLightRef.position.set(0,635,0); tipLightRef.target.position.set(0,0,0);
+  scene.add(tipLightRef); scene.add(tipLightRef.target);
+
+  obsLight1=new THREE.DirectionalLight(0x88ffff,0);
+  obsLight1.position.set(0,360,0); obsLight1.target.position.set(0,0,0);
+  scene.add(obsLight1); scene.add(obsLight1.target);
+  obsLight2=new THREE.DirectionalLight(0x88ffff,0);
+  obsLight2.position.set(0,485,0); obsLight2.target.position.set(0,0,0);
+  scene.add(obsLight2); scene.add(obsLight2.target);
 
   // Stars
   var sp=new Float32Array(4000*3);
@@ -1322,10 +2223,24 @@ function initGame(){
   sunGlow=new THREE.Mesh(new THREE.SphereGeometry(48,32,32),sunGlowMat);scene.add(sunGlow);
   sunGlow2Mat=new THREE.MeshBasicMaterial({color:0xff9922,transparent:true,opacity:0.12,side:THREE.BackSide});
   sunGlow2=new THREE.Mesh(new THREE.SphereGeometry(80,32,32),sunGlow2Mat);scene.add(sunGlow2);
-  moonSphere=new THREE.Mesh(new THREE.SphereGeometry(20,32,32),new THREE.MeshBasicMaterial({color:0xeef4ff,transparent:true,opacity:0.0}));
+  moonSphere=new THREE.Mesh(new THREE.SphereGeometry(60,32,32),new THREE.MeshBasicMaterial({color:0xffdd00})); // 濃い黄色
   scene.add(moonSphere);
-  moonGlowMat=new THREE.MeshBasicMaterial({color:0x8899dd,transparent:true,opacity:0.0,side:THREE.BackSide});
-  moonGlow=new THREE.Mesh(new THREE.SphereGeometry(34,32,32),moonGlowMat);scene.add(moonGlow);
+  moonGlowMat=new THREE.MeshBasicMaterial({color:0xeef6ff,transparent:true,opacity:0.0,side:THREE.BackSide});
+  moonGlow=new THREE.Mesh(new THREE.SphereGeometry(120,32,32),moonGlowMat);scene.add(moonGlow);
+  var moonGlow2Mat=new THREE.MeshBasicMaterial({color:0xbbd0ff,transparent:true,opacity:0.0,side:THREE.BackSide});
+  var moonGlow2=new THREE.Mesh(new THREE.SphereGeometry(200,32,32),moonGlow2Mat);scene.add(moonGlow2);
+  moonGlow2._mat=moonGlow2Mat;
+  moonSphere._glow2=moonGlow2;
+  // 月の地上照明用PointLight
+  // 月はDirectionalLight（平行光源）で地上全体を均一に照らす
+  var moonDirLight=new THREE.DirectionalLight(0xddeeff,0);
+  moonDirLight.position.set(0,1,0); // 真上から（月の位置で後で更新）
+  scene.add(moonDirLight);
+  moonSphere._light=moonDirLight;
+  // 月の環境光補助
+  var moonAmbLight=new THREE.HemisphereLight(0x8899cc,0x111122,0);
+  scene.add(moonAmbLight);
+  moonSphere._ambLight=moonAmbLight;
 
   // Controls
   document.addEventListener('keydown',function(e){keys[e.code]=true;if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();});
@@ -1392,10 +2307,27 @@ function initGame(){
   }
 
   updateCoinDisplay();
-  setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 500);
+  // セーブデータがあればロード、なければ初回メッセージ
+  setTimeout(function(){ if(!loadCity()) showNotif('🗺️ 新しい街を作ろう！'); }, 400);
+  // 手動セーブボタン追加
+  (function(){
+    var sb=document.createElement('button');
+    sb.textContent='💾SAVE';
+    sb.style.cssText='position:absolute;bottom:70px;right:12px;padding:6px 12px;background:rgba(0,80,160,0.85);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;z-index:200;';
+    sb.addEventListener('click',function(){ saveCity(); });
+    document.body.appendChild(sb);
+  })();
+  setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
 }
 
 function ignis_startGame(){
+  // ローディング画面を消す
+  var loadEl = document.getElementById('loading');
+  if(loadEl){
+    loadEl.style.opacity = '0';
+    loadEl.style.transition = 'opacity 0.8s';
+    setTimeout(function(){ loadEl.style.display = 'none'; }, 900);
+  }
   ignisLoop();
 }
 
@@ -1404,24 +2336,122 @@ function ignisLoop(){
   var _now=performance.now(); var dt=(_now-_lastT)/1000; _lastT=_now; t+=dt;
 
   var cycle=(t%TIME_CYCLE)/TIME_CYCLE;
-  var totalSteps=timeColors.length;
-  var pos=cycle*totalSteps;
-  var idx=Math.floor(pos)%totalSteps;
-  var nextIdx=(idx+1)%totalSteps;
-  var frac=pos-Math.floor(pos);
-  var tc=timeColors[idx], tn=timeColors[nextIdx];
-  var skyCol=lerpColor(tc.sky,tn.sky,frac);
+  var SUN_RADIUS=700;
+  var sunZ=-100;
+
+  // 太陽: cycle 0→0.5 で右端(+700)→左端(-700) の半円アーチ
+  var sunP = cycle / 0.5; // 0→1 (cycle 0〜0.5の間)
+  sunP = Math.min(sunP, 1.0);
+  var sunX = SUN_RADIUS * (1.0 - sunP * 2.0);   // +700→-700
+  var sunY = Math.sin(sunP * Math.PI) * SUN_RADIUS * 1.1; // 塔(635m)より高く
+  sunSphere.position.set(sunX, sunY, sunZ);
+  sunGlow.position.copy(sunSphere.position);
+  sunGlow2.position.copy(sunSphere.position);
+
+  // 月: cycle 0.5→1.0 で右端(+700)→左端(-700) の半円アーチ（太陽と同じ方向）
+  var moonP = (cycle - 0.5) / 0.5; // 0→1 (cycle 0.5〜1.0の間)
+  moonP = Math.max(0.0, Math.min(moonP, 1.0));
+  var moonX = SUN_RADIUS * (1.0 - moonP * 2.0);   // +700→-700
+  var moonY = Math.sin(moonP * Math.PI) * SUN_RADIUS * 1.0; // 塔より高く
+  // cycle<0.5は月を地平線下に隠す
+  if(cycle < 0.5) { moonX = SUN_RADIUS * 3; moonY = -2000; } // 完全に画面外へ
+  moonSphere.position.set(moonX, moonY, sunZ);
+  moonGlow.position.copy(moonSphere.position);
+  if(moonSphere._glow2) moonSphere._glow2.position.copy(moonSphere.position);
+
+  // 太陽・月の視認性
+  var sunVis = Math.max(0, Math.min(1, sunY / 80));
+  var moonVis = Math.max(0, Math.min(1, moonY / 80));
+  sunSphere.material.opacity = Math.min(1.0, sunVis * 1.3);
+  sunGlowMat.opacity = sunVis * 0.6;
+  sunGlow2Mat.opacity = sunVis * 0.22;
+  // 月の見た目: 地平線上にあれば完全に白く輝く
+  var moonAbove = moonY > -20;
+  moonSphere.visible = moonAbove;
+  if(moonSphere._glow2) moonSphere._glow2.visible = moonAbove;
+  moonGlow.visible = moonAbove;
+  moonGlowMat.opacity = moonAbove ? Math.min(0.7, moonVis * 2.5) : 0;
+  if(moonSphere._glow2) moonSphere._glow2._mat.opacity = moonAbove ? Math.min(0.5, moonVis * 2.0) : 0;
+  // 月の地上照明を更新
+  if(moonSphere._light){ moonSphere._light.intensity = moonVis * 1.2; moonSphere._light.position.set(moonX, moonY, sunZ); moonSphere._light.target.position.set(0,0,0); if(moonSphere._light.target.parent!==scene) scene.add(moonSphere._light.target); }
+  if(moonSphere._ambLight){ moonSphere._ambLight.intensity = moonVis * 0.5; }
+
+  // 時間帯を太陽位置で決定
+  // MORNING: cycle 0〜0.15 (日の出〜朝)
+  // DAY:     cycle 0.15〜0.4 (朝〜昼)
+  // SUNSET:  cycle 0.4〜0.55 (夕方〜日没)
+  // NIGHT:   cycle 0.55〜1.0 (月夜〜夜明け前)
+  var timeLabel, skyCol, fogCol, ambCol, ambInt, sunInt, sunCol;
+  if(cycle < 0.15){
+    // MORNING: 日の出、水色、明るい
+    var f = cycle / 0.15;
+    skyCol = lerpColor(0x87ceeb, 0x88ddff, f);
+    fogCol = lerpColor(0x99ddee, 0xaaddff, f);
+    ambCol = lerpColor(0x334466, 0x445577, f);
+    ambInt = 0.6 + f * 0.3;
+    sunInt = 0.5 + f * 0.5;
+    sunCol = lerpColor(0xffdd88, 0xfffde0, f);
+    timeLabel = 'MORNING';
+  } else if(cycle < 0.35){
+    // DAY: 明るい青
+    var f = (cycle - 0.15) / 0.2;
+    skyCol = lerpColor(0x88ddff, 0x5ba3d9, f);
+    fogCol = lerpColor(0xaaddff, 0x77aacc, f);
+    ambCol = lerpColor(0x445577, 0x334455, f);
+    ambInt = 0.9 + f * 0.1;
+    sunInt = 1.0;
+    sunCol = 0xffffff;
+    timeLabel = 'DAY';
+  } else if(cycle < 0.45){
+    // PRE-SUNSET: 青→黄金色へじわじわ（cycle 0.35〜0.45）
+    var f = (cycle - 0.35) / 0.10;
+    skyCol = lerpColor(0x5ba3d9, 0xffcc44, f);
+    fogCol = lerpColor(0x77aacc, 0xee9933, f);
+    ambCol = lerpColor(0x334455, 0x443322, f);
+    ambInt = 1.0 - f * 0.3;
+    sunInt = 1.0 - f * 0.1;
+    sunCol = lerpColor(0xffffff, 0xffdd88, f);
+    timeLabel = 'SUNSET';
+  } else if(cycle < 0.55){
+    // SUNSET本番: 黄金→オレンジ→暗赤（cycle 0.45〜0.55）
+    var f = (cycle - 0.45) / 0.10;
+    skyCol = lerpColor(0xffcc44, 0x221008, f);
+    fogCol = lerpColor(0xee9933, 0x110400, f);
+    ambCol = lerpColor(0x443322, 0x180800, f);
+    ambInt = 0.7 - f * 0.65;
+    sunInt = 0.9 - f * 0.85;
+    sunCol = lerpColor(0xffdd88, 0xff3300, f);
+    timeLabel = 'SUNSET';
+  } else {
+    // NIGHT: 真っ暗、月と星
+    var f = Math.min(1, (cycle - 0.55) / 0.1);
+    skyCol = lerpColor(0x221008, 0x050510, f);
+    fogCol = lerpColor(0x110400, 0x030308, f);
+    ambCol = lerpColor(0x180800, 0x112233, f); // 夜は青白い月明かり色
+    ambInt = 0.35;  // 夜でも最低輝度を確保（ビルドしやすい）
+    sunInt = 0.0;
+    sunCol = 0x000000;
+    timeLabel = 'NIGHT';
+  }
+
   scene.background.setHex(skyCol);
-  scene.fog.color.setHex(skyCol);
-  var fogDensities=[0.002,0.0008,0.0008,0.0008,0.005];
-  scene.fog.density=fogDensities[idx]+(fogDensities[nextIdx]-fogDensities[idx])*frac;
-  ambientLight.color.setHex(lerpColor(tc.amb,tn.amb,frac));
-  ambientLight.intensity=0.4+(tc.si+(tn.si-tc.si)*frac)*0.8;
-  sun.color.setHex(lerpColor(tc.sun,tn.sun,frac));
-  sun.intensity=tc.si+(tn.si-tc.si)*frac;
-  var sunAngle=(cycle*Math.PI*2)-Math.PI*0.5;
-  sun.position.set(Math.cos(sunAngle)*300,Math.abs(Math.sin(sunAngle))*300+50,Math.sin(sunAngle)*200);
-  timeLabelEl.textContent=tc.label;
+  scene.fog.color.setHex(fogCol);
+  scene.fog.density = timeLabel==='NIGHT' ? 0.0005 : (timeLabel==='SUNSET' ? 0.001 : 0.0006);
+  ambientLight.color.setHex(ambCol);
+  ambientLight.intensity = ambInt;
+  sun.color.setHex(sunCol);
+  sun.intensity = sunInt;
+  sun.position.set(sunX, Math.max(0, sunY) + 50, sunZ);
+
+  var nightness = timeLabel==='NIGHT' ? 1.0 : (timeLabel==='SUNSET' ? Math.max(0,(cycle-0.4)/0.15) : 0);
+  starsMat.opacity = nightness * 0.85;
+  brightStarsMat.opacity = nightness * 1.0;
+
+  if(timeLabelEl) timeLabelEl.textContent = timeLabel;
+
+  // tc互換（窓システム用）
+  var tc = {label: timeLabel, si: sunInt};
+  var frac = 0;
 
   var SPD=0.18, DAMP=0.82, MAX_SPD=1.0;
   yaw-=jrX*0.035;
@@ -1446,58 +2476,156 @@ function ignisLoop(){
   camera.position.z=Math.max(-3000,Math.min(3000,camera.position.z));
   camera.quaternion.setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
 
-  var SUN_RADIUS=600;
-  var sunA=(cycle*Math.PI*2)-Math.PI*0.5;
-  sunSphere.position.set(Math.cos(sunA)*SUN_RADIUS,Math.sin(sunA)*SUN_RADIUS,Math.sin(sunA*0.3)*200);
-  sunGlow.position.copy(sunSphere.position);
-  sunGlow2.position.copy(sunSphere.position);
-  var moonA=sunA+Math.PI;
-  moonSphere.position.set(Math.cos(moonA)*SUN_RADIUS,Math.sin(moonA)*SUN_RADIUS,Math.sin(moonA*0.3)*200);
-  moonGlow.position.copy(moonSphere.position);
-  var sunVis=Math.max(0,Math.min(1,(sunSphere.position.y+30)/100));
-  var moonVis=Math.max(0,Math.min(1,(moonSphere.position.y+80)/160));
-  sunSphere.material.opacity=Math.min(1.0,sunVis*1.2);
-  sunGlowMat.opacity=sunVis*0.5;
-  sunGlow2Mat.opacity=sunVis*0.18;
-  moonSphere.material.opacity=Math.min(1.0,moonVis*1.1);
-  moonGlowMat.opacity=moonVis*0.35;
-  var nightness=Math.max(0,1.0-sunVis*3);
-  starsMat.opacity=nightness*0.85;
-  brightStarsMat.opacity=nightness*1.0;
+  // 太陽・月・nightness は上部で処理済み
 
+  // 車ライト（sunset〜nightに点灯）
+  if(vehicleLights.length>0){
+    var carLightFac=0;
+    if(timeLabel==='SUNSET') carLightFac=Math.min(1,(cycle-0.4)/0.12);
+    if(timeLabel==='NIGHT') carLightFac=1.0;
+    vehicleLights.forEach(function(vl){
+      if(vl.hl) vl.hl.opacity=carLightFac*0.95;
+      if(vl.tl) vl.tl.opacity=carLightFac*0.9;
+    });
+  }
+  // 屋上ビーコン点滅（赤・強め）
+  if(beaconMeshes.length>0){
+    for(var bi=0;bi<beaconMeshes.length;bi++){
+      var bc=beaconMeshes[bi];
+      var blink=0.5+0.5*Math.sin(t*3.5+bc.phase); // 0〜1 で点滅
+      if(bc.core && bc.core.material){
+        bc.core.material.opacity=0.5+blink*0.5;
+        bc.core.material.color.setRGB(1.0, 0.1+blink*0.1, 0);
+      }
+      if(bc.glow && bc.glow.material){
+        bc.glow.material.opacity=blink*0.85;
+        var gs=0.8+blink*0.6; bc.glow.scale.setScalar(gs);
+      }
+    }
+  }
   if(windowMeshes.length>0){
-    var isDawn=(cycle<0.15||cycle>0.92);
-    var isEvening=(cycle>0.55&&cycle<0.75);
-    var isNight=(cycle>0.75||cycle<0.08);
+    // SUNSET(0.35)〜から徐々に点灯、NIGHT(0.55〜)でフル点灯
+    var winFac = 0;
+    if(cycle >= 0.35 && cycle < 0.55) winFac = (cycle - 0.35) / 0.20;
+    else if(cycle >= 0.55 || cycle < 0.08) winFac = 1.0;
+    else if(cycle < 0.15) winFac = 1.0 - (cycle - 0.08) / 0.07;
     windowMeshes.forEach(function(w){
       var targetOp=0, targetCol=0xffffaa;
-      if(sunVis>0.5){ targetOp=0.08+w.rand*0.08; targetCol=0xaaddff; }
-      else if(isEvening){ if(w.rand<0.4){targetOp=0.5+w.rand*0.5;targetCol=0xffdd88;}else{targetOp=0.0;} }
-      else if(isNight){ if(w.rand<0.25){targetOp=0.3+w.rand*0.6+Math.sin(t*3+w.rand*10)*0.05;targetCol=0xffcc66;}else{targetOp=0.0;} }
-      else { targetOp=nightness*(0.4+w.rand*0.6); targetCol=0xffee99; }
-      w.mesh.material.opacity+=(targetOp-w.mesh.material.opacity)*0.04;
+      if(winFac > 0){
+        // 夕方: 暖色、夜: 少し電球色に
+        var warmFac = Math.min(1, winFac * 1.5);
+        targetCol = winFac > 0.8 ? 0xffcc55 : 0xffdd88;
+        // ランダムに一部の窓だけ点灯（密度はwinFacに比例）
+        if(w.rand < 0.15 + winFac * 0.65){
+          targetOp = winFac * (0.5 + w.rand * 0.5) + Math.sin(t * 2 + w.rand * 20) * 0.04;
+        }
+      } else {
+        // 昼間: うっすら反射のみ
+        targetOp = 0.04 + w.rand * 0.04;
+        targetCol = 0xaaddff;
+      }
+      w.mesh.material.opacity += (targetOp - w.mesh.material.opacity) * 0.05;
       if(w.mesh.material.color) w.mesh.material.color.setHex(targetCol);
     });
   }
 
-  topGlow.material.opacity=0.6+Math.sin(t*3)*0.3;
-  towerLight.intensity=4+Math.sin(t*2)*2;
+  // 先端グロー強く脈動
+  topGlow.material.opacity=0.85+Math.sin(t*5)*0.15;
+  // SUNSET/NIGHT判定
+  var eveningFac=0;
+  if(timeLabel==='SUNSET') eveningFac = Math.min(1.0, (cycle - 0.35) / 0.20);
+  if(timeLabel==='NIGHT') eveningFac = 1.0;
+  eveningFac = Math.max(0, Math.min(1, eveningFac));
+  // 展望台グロー（スカイツリー式 - 青白く全体が明るく輝く）
+  if(obsGlowMat1) obsGlowMat1.opacity=eveningFac*(1.7+Math.sin(t*1.5)*0.2);
+  if(obsGlowMat2) obsGlowMat2.opacity=eveningFac*(1.6+Math.sin(t*1.5+0.8)*0.2);
+  // 展望台ポイントライトも夜は強く
+  if(tipLightRef){ tipLightRef.intensity=eveningFac>0.1 ? 1.8+Math.sin(t*5)*0.3 : 0; }
+  if(obsLight1){ obsLight1.intensity=eveningFac>0.1 ? 2.5+Math.sin(t*2)*0.2 : 0; }
+  if(obsLight2){ obsLight2.intensity=eveningFac>0.1 ? 2.0+Math.sin(t*2+1)*0.15 : 0; }
+  // ===== 展望台LED回転（点が確実にくるくる周回） =====
+  if(typeof rotLights1!=='undefined' && eveningFac>0){
+    var n1=rotLights1.length; // 20点
+    for(var ri=0;ri<n1;ri++){
+      // t*speed で全点が一緒に回転、ri/n1*2PI で等間隔に並ぶ
+      var ang1 = t * -1.5 - (ri/n1)*Math.PI*2; // 反時計回り
+      var yR1 = 342 + (ri%5)*8; // 5段
+      rotLights1[ri].position.set(Math.cos(ang1)*29.5, yR1, Math.sin(ang1)*29.5);
+      rotLights1[ri].material.opacity = eveningFac;
+      // スケールで点滅感
+      var sc1 = 1.0 + Math.sin(t*4 + ri*0.8)*0.4;
+      rotLights1[ri].scale.setScalar(sc1);
+    }
+  } else if(typeof rotLights1!=='undefined'){
+    for(var ri=0;ri<rotLights1.length;ri++) rotLights1[ri].material.opacity=0;
+  }
+  if(typeof rotLights2!=='undefined' && eveningFac>0){
+    var n2=rotLights2.length; // 16点
+    for(var ri=0;ri<n2;ri++){
+      var ang2 = t * -1.5 - (ri/n2)*Math.PI*2; // 反時計回り（下と同じ方向）
+      var yR2 = 472 + (ri%4)*8; // 4段
+      rotLights2[ri].position.set(Math.cos(ang2)*25, yR2, Math.sin(ang2)*25);
+      rotLights2[ri].material.opacity = eveningFac;
+      var sc2 = 1.0 + Math.sin(t*4.5 + ri*0.8)*0.4;
+      rotLights2[ri].scale.setScalar(sc2);
+    }
+  } else if(typeof rotLights2!=='undefined'){
+    for(var ri=0;ri<rotLights2.length;ri++) rotLights2[ri].material.opacity=0;
+  }
+  towerLight.intensity=0; // 根本の白反射を消す
+  // 芯柱上昇フロー（SUNSET以降に点灯・下から上へ流れる）
+  if(typeof coreFlowLights!=='undefined'){
+    var nFlow=coreFlowLights.length;
+    var coreVis = eveningFac; // SUNSET開始から徐々に点灯
+    for(var fi=0;fi<nFlow;fi++){
+      var frac0 = (t * 0.55 + fi / nFlow) % 1.0; // 上に流れる速さ
+      var fy = frac0 * coreH;
+      coreFlowLights[fi].position.set(0, fy, 0);
+      // 上部ほど明るく輝く（下でフェードイン、上でフェードアウト）
+      var fade = Math.sin(frac0 * Math.PI);
+      coreFlowLights[fi].material.opacity = coreVis * fade * 1.0;
+    }
+  }
   if(altEl) altEl.textContent=Math.round(camera.position.y);
   if(spdEl) spdEl.textContent=Math.round(vel.length()*55);
 
   movingObjects.forEach(function(obj){
     var g=obj.group;
     var nx=g.position.x, nz=g.position.z;
+    var isVehicle=(obj.type==='car'||obj.type==='bike');
     if(obj.axis==='x'){ nx+=obj.speed*obj.dir; g.rotation.y=obj.dir>0?Math.PI/2:-Math.PI/2; }
     else { nz+=obj.speed*obj.dir; g.rotation.y=obj.dir>0?0:Math.PI; }
-    if(obj.onRoadOnly){
-      var tk=Math.round(nx/TILE)*TILE+'_'+Math.round(nz/TILE)*TILE;
-      if(roadTiles.has(tk)){ g.position.x=nx; g.position.z=nz; }
-      else {
-        obj.dir*=-1;
-        if(obj.axis==='x') g.rotation.y=obj.dir>0?Math.PI/2:-Math.PI/2;
-        else g.rotation.y=obj.dir>0?0:Math.PI;
+    if(obj.onRoadOnly && isVehicle){
+      // 左側通行: 道路中央線から laneOff 分ずらす
+      var lo=obj.laneOff||1.8;
+      var laneSign = obj.dir>0 ? -1 : 1;
+      if(obj.axis==='x'){
+        nz = Math.round(nz/TILE)*TILE + laneSign*lo; // 中央に吸着
+        var tk=Math.round(nx/TILE)*TILE+'_'+Math.round(nz/TILE)*TILE;
+        if(roadTiles.has(tk)){ g.position.x=nx; g.position.z=nz; }
+        else {
+          // 端: 反対車線に切り替えて折り返し
+          obj.dir*=-1;
+          g.rotation.y=obj.dir>0?Math.PI/2:-Math.PI/2;
+          var newLaneSign=obj.dir>0?-1:1;
+          g.position.z=Math.round(g.position.z/TILE)*TILE+newLaneSign*lo;
+        }
+      } else {
+        nx = Math.round(nx/TILE)*TILE + laneSign*lo;
+        var tk2=Math.round(nx/TILE)*TILE+'_'+Math.round(nz/TILE)*TILE;
+        if(roadTiles.has(tk2)){ g.position.x=nx; g.position.z=nz; }
+        else {
+          obj.dir*=-1;
+          g.rotation.y=obj.dir>0?0:Math.PI;
+          var newLaneSign2=obj.dir>0?-1:1;
+          g.position.x=Math.round(g.position.x/TILE)*TILE+newLaneSign2*lo;
+        }
       }
+    } else if(obj.onRoadOnly && !isVehicle){
+      // 歩行者: 道路タイルには乗れない（道路外のみ）
+      var tk3=Math.round(nx/TILE)*TILE+'_'+Math.round(nz/TILE)*TILE;
+      if(!roadTiles.has(tk3)){ g.position.x=nx; g.position.z=nz; }
+      else { obj.dir*=-1; } // 道路に当たったら折り返す
     } else { g.position.x=nx; g.position.z=nz; }
     if(obj.axis==='x' && Math.abs(g.position.x)>obj.limit) obj.dir*=-1;
     if(obj.axis==='z' && Math.abs(g.position.z)>obj.limit) obj.dir*=-1;
@@ -1511,11 +2639,16 @@ function ignisLoop(){
 
   riverMeshes.forEach(function(m){
     if(m.userData.isFountainDrop){
-      var d=m.userData; d.phase+=dt*2.5;
-      var up=Math.sin(d.phase)*d.height;
-      var spread=Math.abs(Math.sin(d.phase))*d.radius;
-      m.position.set(d.fx+Math.cos(d.angle)*spread,7.5+up,d.fz+Math.sin(d.angle)*spread);
-      m.material.opacity=Math.max(0,Math.sin(d.phase)*0.85);
+      var d=m.userData;
+      var spd = d.dropType==='center'?3.5 : d.dropType==='mid'?2.8 : 2.0;
+      d.phase+=dt*spd;
+      var p=((d.phase%Math.PI)+Math.PI)%Math.PI; // 0→PI で上昇→下降
+      var up=Math.sin(p)*d.height;
+      var spread=Math.sin(p)*d.radius;
+      var by=d.baseY||4.7;
+      m.position.set(d.fx+Math.cos(d.angle)*spread, by+up, d.fz+Math.sin(d.angle)*spread);
+      // 上昇時に明るく、落下時に薄く
+      m.material.opacity=Math.max(0, Math.sin(p)*(d.dropType==='center'?0.9:0.75));
       return;
     }
     if(m.userData.isStream){

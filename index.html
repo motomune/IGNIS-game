@@ -296,6 +296,10 @@ var placedObjects = [];
 var growRegistry = {};
 var playerCoins = 15000;
 var recoveryMode = false;
+
+// ── マルチプレイ設定 ──────────────────────────────────────────
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbw1fC1H2N6qNcFTGz_fr9PxADGn16fAlA31KXTHhCLHA1DiRdsAwzGo_XyfQobsb8bGZQ/exec';
+var currentPlayer = (new URLSearchParams(location.search)).get('n') || '';
 var t = 0;
 var _lastT = performance.now();
 
@@ -712,19 +716,20 @@ function recoverLast(){
   if(placedObjects.length===0){ showNotif('回収できるものがありません'); return; }
 
   // 十字カーソルが向いている位置（placePos）に最も近いオブジェクトを回収
+  // 自分が建てたものだけ回収可能（currentPlayerが設定されている場合）
   var pos=placePos();
   var cx=pos.x, cz=pos.z;
   var bestIdx=-1, bestDist=Infinity;
   for(var i=0;i<placedObjects.length;i++){
     var o=placedObjects[i];
     if(o.type==='car'||o.type==='bike'||o.type==='person') continue;
+    // 他人のビルドは回収不可
+    if(currentPlayer && o.player && o.player !== currentPlayer) continue;
     var dx=o.x-cx, dz=o.z-cz;
     var dist=dx*dx+dz*dz;
     if(dist<bestDist){ bestDist=dist; bestIdx=i; }
   }
-  // 近くに何もなければ最後尾を回収
-  if(bestIdx===-1) bestIdx=placedObjects.length-1;
-  if(bestIdx<0){ showNotif('回収できるものがありません'); return; }
+  if(bestIdx<0){ showNotif('回収できるものがありません\n（自分が建てたものだけ回収できます）'); return; }
 
   var obj=placedObjects.splice(bestIdx,1)[0];
   doRemoveObject(obj);
@@ -987,7 +992,7 @@ function buildGrowableSlope(x,z,facing){
 }
 function buildRoadCurve(x,z,turn,facing){
   var bm=[];
-  var mat =new THREE.MeshStandardMaterial({color:0x555555,roughness:0.9,metalness:0.0,envMapIntensity:0.0});
+  var mat =new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92,metalness:0.0,envMapIntensity:0.0});
   var lMat=new THREE.MeshBasicMaterial({color:0xffdd00,transparent:true,opacity:0.5});
   var wMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.55});
   facing=facing||'N';
@@ -2304,11 +2309,11 @@ function buildSidewalk(x,z){
 
 function buildIntersection(x,z){
   // 交差点: 4方向に道路が延びる正方形
-  var roadMat=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.9,metalness:0.0});
+  var roadMat=new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92,metalness:0.0});
   var base=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),roadMat);
   base.rotation.x=-Math.PI/2; base.position.set(x,0.05,z); scene.add(base);
   // 4方向のアスファルト延長（short）
-  var ext=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.9,metalness:0.0});
+  var ext=new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92,metalness:0.0});
   // 白線: 斜めのゼブラクロス4本
   var crossMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.7});
   var stripeW=TILE*0.12, stripeL=TILE*0.38;
@@ -2485,26 +2490,34 @@ var _saveKey='ignis_v4';
 function saveCity(){
   if(typeof scene==='undefined'||typeof playerCoins==='undefined') return;
   try{
-    var data={v:4,coins:playerCoins,cycle:cycle||0,builds:[],gr:{}};
+    // 既存のcity_dataをベースに自分のビルドだけ更新する
+    var myBuilds=[];
     placedObjects.forEach(function(o){
       if(o.type==='car'||o.type==='bike'||o.type==='person') return;
-      data.builds.push({t:o.type,x:o.x,z:o.z});
+      myBuilds.push({t:o.type,x:o.x,z:o.z,p:currentPlayer||'guest'});
     });
-    Object.keys(growRegistry).forEach(function(k){ data.gr[k]=growRegistry[k].level; });
-    var json=JSON.stringify(data);
-    var ok=false;
-    // 1) localStorage
-    try{ localStorage.setItem(_saveKey,json); ok=true; }catch(e1){}
-    // 2) sessionStorage
-    if(!ok){ try{ sessionStorage.setItem(_saveKey,json); ok=true; }catch(e2){} }
-    // 3) インメモリ（ページ内変数）
-    if(!ok){ window._ignisSave=json; ok=true; }
-    if(ok) showNotif('💾 セーブ完了！ ('+data.builds.length+'棟)');
-    else showNotif('⚠️ セーブできませんでした');
+    var myGr={};
+    Object.keys(growRegistry).forEach(function(k){ myGr[k]=growRegistry[k].level; });
+
+    // ローカルにも保存
+    var localData={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
+    try{ localStorage.setItem(_saveKey,JSON.stringify(localData)); }catch(e1){}
+
+    // GitHubに共有保存（GAS経由）
+    showNotif('💾 共有保存中...');
+    fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({cityData: localData})
+    }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.ok) showNotif('💾 共有保存完了！('+myBuilds.length+'棟)');
+      else showNotif('⚠️ 共有保存失敗');
+    }).catch(function(){ showNotif('⚠️ 共有保存失敗'); });
   }catch(e){ showNotif('⚠️ セーブ失敗'); console.warn('save:',e); }
 }
 
-function rebuildItem(type,x,z){
+function rebuildItem(type,x,z,player){
+  player = player || '';
   if(type==='road'){
     var rk=x+'_'+z; roadTiles.add(rk);
     var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),
@@ -2538,20 +2551,47 @@ function rebuildItem(type,x,z){
   else if(type==='paddy'){ addRicePaddy(x,z); }
   else if(type==='bridge'){ buildGrowableBridge(x,z,'N'); }
   else if(type==='footbridge'){ buildFootbridge(x,z); }
+  // 建設者情報をplacedObjectsの最後の要素に付加
+  if(player && placedObjects.length > 0){
+    var last = placedObjects[placedObjects.length-1];
+    if(last && last.x===x && last.z===z) last.player = player;
+  }
 }
 
 function loadCity(onDone){
+  // まずGitHubから共有データを取得
+  var ghUrl = 'https://raw.githubusercontent.com/motomune/IGNIS-game/main/city_data.json?t=' + Date.now();
+  fetch(ghUrl)
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if(data && data.builds && data.builds.length > 0){
+        _applyLoadedData(data, onDone);
+      } else {
+        // GitHubにデータなし → ローカルから試みる
+        _loadFromLocal(onDone);
+      }
+    })
+    .catch(function(){
+      // ネットワークエラー → ローカルから試みる
+      _loadFromLocal(onDone);
+    });
+}
+
+function _loadFromLocal(onDone){
   try{
-    // 1) localStorage → 2) sessionStorage → 3) インメモリ の順に試みる
     var raw=null;
     try{ raw=localStorage.getItem(_saveKey); }catch(e1){}
-    if(!raw){ try{ raw=sessionStorage.getItem(_saveKey); }catch(e2){} }
-    if(!raw && window._ignisSave) raw=window._ignisSave;
     if(!raw){ if(onDone) onDone(false); return; }
-    var data=JSON.parse(raw);
-    playerCoins=data.coins||5000;
-    updateCoinDisplay();
-    // growRegistry復元（新旧フォーマット対応）
+    _applyLoadedData(JSON.parse(raw), onDone);
+  }catch(e){
+    console.warn('loadCity local:',e);
+    if(onDone) onDone(false);
+  }
+}
+
+function _applyLoadedData(data, onDone){
+  try{
+    if(data.coins !== undefined){ playerCoins=data.coins; updateCoinDisplay(); }
     var gr=data.gr||data.growLevels||{};
     Object.keys(gr).forEach(function(k){
       if(!growRegistry[k]) growRegistry[k]={level:0,meshes:[],maxLevel:5};
@@ -2561,14 +2601,14 @@ function loadCity(onDone){
     var builds=data.builds||[];
     builds.forEach(function(b){
       try{
-        // 新フォーマット{t,x,z} と旧フォーマット{type,x,z} 両対応
-        rebuildItem(b.t||b.type, b.x, b.z); count++;
+        rebuildItem(b.t||b.type, b.x, b.z, b.p||'');
+        count++;
       }catch(e){}
     });
     showNotif('📂 ロード完了！ '+count+'棟復元');
     if(onDone) onDone(true);
   }catch(e){
-    console.warn('loadCity:',e);
+    console.warn('_applyLoadedData:',e);
     if(onDone) onDone(false);
   }
 }
@@ -2616,7 +2656,7 @@ function initGame(){
   // 円形の大地
   var gnd=new THREE.Mesh(
     new THREE.CircleGeometry(4000,128),
-    new THREE.MeshStandardMaterial({color:0xd4b896,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
+    new THREE.MeshStandardMaterial({color:0x3a8020,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
   );
   gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
   // 円形グリッド：GridHelperの代わりに円形テクスチャ状のグリッドプレーンを使う
@@ -3060,18 +3100,10 @@ function initGame(){
   }
 
   updateCoinDisplay();
-  // セーブデータがあればロード、なければ初回メッセージ
+  // GitHubから共有データをロード
   setTimeout(function(){
     loadCity(function(ok){
-      // セーブデータのplacedObjects（塔・複合ビル以外）を全削除
-      for(var _ci=placedObjects.length-1;_ci>=0;_ci--){
-        doRemoveObject(placedObjects[_ci]);
-      }
-      placedObjects.length=0;
-      playerCoins=15000;
-      updateCoinDisplay();
       if(!ok) showNotif('🗺️ 新しい街を作ろう！');
-      else showNotif('配置物をリセット！コイン15000c！');
     });
   }, 400);
   // 手動セーブボタン追加
@@ -3082,10 +3114,21 @@ function initGame(){
     sb.addEventListener('click',function(){ saveCity(); });
     document.body.appendChild(sb);
   })();
-  // 自動セーブ・離脱時セーブをここで登録（scene確定後）
-  setInterval(function(){ saveCity(); }, 60000);
+  // 自動セーブ（5分ごと）・離脱時セーブ
+  setInterval(function(){ saveCity(); }, 300000);
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
+
+  // プレイヤー名が未設定なら入力を促す
+  if(!currentPlayer){
+    setTimeout(function(){
+      var name = prompt('あなたのX IDを入力してください（例: @soultamash81989）\n※自分が建てたものだけ回収できます');
+      if(name && name.trim()) currentPlayer = name.trim();
+      if(currentPlayer) showNotif('ようこそ ' + currentPlayer + ' さん！');
+    }, 1200);
+  } else {
+    setTimeout(function(){ showNotif('ようこそ ' + currentPlayer + ' さん！'); }, 1200);
+  }
 }
 
 function ignis_startGame(){
@@ -3104,26 +3147,30 @@ function ignisLoop(){
   var _now=performance.now(); var dt=(_now-_lastT)/1000; _lastT=_now; t+=dt;
 
   cycle=(t%TIME_CYCLE)/TIME_CYCLE;
-  var SUN_RADIUS=700;
-  var sunZ=-100;
+  var SUN_RADIUS=900;
+  // 太陽・月は「奥（Z=-1400）の端」から昇り、X軸方向に横断するアーチ
+  // 会場の奥の端が地平線になる
+  var sunHorizonZ = -1400; // 昇り沈みの地平線Z位置（奥の端）
 
-  // 太陽: cycle 0→0.5 で右端(+700)→左端(-700) の半円アーチ
-  var sunP = cycle / 0.5; // 0→1 (cycle 0〜0.5の間)
+  // 太陽: cycle 0→0.5 で右端(+900)→左端(-900) の半円アーチ
+  var sunP = cycle / 0.5;
   sunP = Math.min(sunP, 1.0);
-  var sunX = SUN_RADIUS * (1.0 - sunP * 2.0);   // +700→-700
-  var sunY = Math.sin(sunP * Math.PI) * SUN_RADIUS * 1.1; // 塔(635m)より高く
-  sunSphere.position.set(sunX, sunY, sunZ);
+  var sunX = SUN_RADIUS * (1.0 - sunP * 2.0);
+  var sunY = Math.sin(sunP * Math.PI) * SUN_RADIUS * 1.15;
+  // 昇り始め・沈み終わりは奥に引っ込む（Z lerp: 端のときsunHorizonZ、中央は0）
+  var sunZpos = sunHorizonZ * (1.0 - Math.sin(sunP * Math.PI));
+  sunSphere.position.set(sunX, sunY, sunZpos);
   sunGlow.position.copy(sunSphere.position);
   sunGlow2.position.copy(sunSphere.position);
 
-  // 月: cycle 0.5→1.0 で右端(+700)→左端(-700) の半円アーチ（太陽と同じ方向）
-  var moonP = (cycle - 0.5) / 0.5; // 0→1 (cycle 0.5〜1.0の間)
+  // 月: cycle 0.5→1.0 で右端(+900)→左端(-900) の半円アーチ
+  var moonP = (cycle - 0.5) / 0.5;
   moonP = Math.max(0.0, Math.min(moonP, 1.0));
-  var moonX = SUN_RADIUS * (1.0 - moonP * 2.0);   // +700→-700
-  var moonY = Math.sin(moonP * Math.PI) * SUN_RADIUS * 1.0; // 塔より高く
-  // cycle<0.5は月を地平線下に隠す
-  if(cycle < 0.5) { moonX = SUN_RADIUS * 3; moonY = -2000; } // 完全に画面外へ
-  moonSphere.position.set(moonX, moonY, sunZ);
+  var moonX = SUN_RADIUS * (1.0 - moonP * 2.0);
+  var moonY = Math.sin(moonP * Math.PI) * SUN_RADIUS * 1.0;
+  if(cycle < 0.5) { moonX = SUN_RADIUS * 3; moonY = -2000; }
+  var moonZpos = cycle < 0.5 ? sunHorizonZ : sunHorizonZ * (1.0 - Math.sin(moonP * Math.PI));
+  moonSphere.position.set(moonX, moonY, moonZpos);
   moonGlow.position.copy(moonSphere.position);
   if(moonSphere._glow2) moonSphere._glow2.position.copy(moonSphere.position);
 
@@ -3141,7 +3188,7 @@ function ignisLoop(){
   moonGlowMat.opacity = moonAbove ? Math.min(0.7, moonVis * 2.5) : 0;
   if(moonSphere._glow2) moonSphere._glow2._mat.opacity = moonAbove ? Math.min(0.5, moonVis * 2.0) : 0;
   // 月の地上照明を更新
-  if(moonSphere._light){ moonSphere._light.intensity = moonVis * 1.2; moonSphere._light.position.set(moonX, moonY, sunZ); moonSphere._light.target.position.set(0,0,0); if(moonSphere._light.target.parent!==scene) scene.add(moonSphere._light.target); }
+  if(moonSphere._light){ moonSphere._light.intensity = moonVis * 1.2; moonSphere._light.position.set(moonX, moonY, moonZpos); moonSphere._light.target.position.set(0,0,0); if(moonSphere._light.target.parent!==scene) scene.add(moonSphere._light.target); }
   if(moonSphere._ambLight){ moonSphere._ambLight.intensity = moonVis * 0.5; }
 
   // 時間帯を太陽位置で決定
@@ -3209,7 +3256,7 @@ function ignisLoop(){
   ambientLight.intensity = ambInt;
   sun.color.setHex(sunCol);
   sun.intensity = sunInt;
-  sun.position.set(sunX, Math.max(0, sunY) + 50, sunZ);
+  sun.position.set(sunX, Math.max(0, sunY) + 50, sunZpos);
 
   var nightness = timeLabel==='NIGHT' ? 1.0 : (timeLabel==='SUNSET' ? Math.max(0,(cycle-0.4)/0.15) : 0);
   starsMat.opacity = nightness * 0.85;

@@ -2503,16 +2503,16 @@ function saveCity(){
     var localData={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
     try{ localStorage.setItem(_saveKey,JSON.stringify(localData)); }catch(e1){}
 
-    // GitHubに共有保存（GAS経由）
+    // GitHubに共有保存（GAS経由・GETで送信）
     showNotif('💾 共有保存中...');
-    fetch(GAS_URL, {
-      method:'POST',
-      body: JSON.stringify({cityData: localData})
-    }).then(function(r){ return r.json(); })
-    .then(function(res){
-      if(res.ok) showNotif('💾 共有保存完了！('+myBuilds.length+'棟)');
-      else showNotif('⚠️ 共有保存失敗');
-    }).catch(function(){ showNotif('⚠️ 共有保存失敗'); });
+    var encoded = encodeURIComponent(JSON.stringify(localData));
+    var url = GAS_URL + '?action=save&data=' + encoded;
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if(res.ok) showNotif('💾 共有保存完了！('+myBuilds.length+'棟)');
+        else showNotif('⚠️ 共有保存失敗: '+(res.error||''));
+      }).catch(function(e){ showNotif('⚠️ 共有保存失敗'); console.warn(e); });
   }catch(e){ showNotif('⚠️ セーブ失敗'); console.warn('save:',e); }
 }
 
@@ -3119,15 +3119,28 @@ function initGame(){
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
 
-  // プレイヤー名が未設定なら入力を促す
+  // プレイヤー名が未設定なら入力を促す（ゲーム起動後に表示）
   if(!currentPlayer){
     setTimeout(function(){
-      var name = prompt('あなたのX IDを入力してください（例: @soultamash81989）\n※自分が建てたものだけ回収できます');
-      if(name && name.trim()) currentPlayer = name.trim();
-      if(currentPlayer) showNotif('ようこそ ' + currentPlayer + ' さん！');
-    }, 1200);
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#1a1a2e;border:2px solid #ff8c00;border-radius:12px;padding:30px;text-align:center;color:#fff;max-width:320px;width:90%;';
+      box.innerHTML = '<div style="font-size:20px;font-weight:bold;color:#ff8c00;margin-bottom:12px;">🔥 IGNIS WORLD</div>'
+        + '<div style="font-size:13px;margin-bottom:16px;">あなたのX IDを入力してください<br><span style="color:#aaa;font-size:11px;">自分が建てたものだけ回収できます</span></div>'
+        + '<input id="player-name-input" type="text" placeholder="例: @soultamash81989" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ff8c00;background:#0a0a1a;color:#fff;font-size:14px;box-sizing:border-box;margin-bottom:14px;">'
+        + '<button id="player-name-btn" style="width:100%;padding:10px;background:#ff8c00;color:#000;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">🎮 ゲームスタート</button>';
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      document.getElementById('player-name-btn').addEventListener('click', function(){
+        var val = document.getElementById('player-name-input').value.trim();
+        if(val){ currentPlayer = val; }
+        document.body.removeChild(overlay);
+        if(currentPlayer) showNotif('ようこそ ' + currentPlayer + ' さん！');
+      });
+    }, 1500);
   } else {
-    setTimeout(function(){ showNotif('ようこそ ' + currentPlayer + ' さん！'); }, 1200);
+    setTimeout(function(){ showNotif('ようこそ ' + currentPlayer + ' さん！'); }, 1500);
   }
 }
 

@@ -297,8 +297,8 @@ var growRegistry = {};
 var playerCoins = 15000;
 var recoveryMode = false;
 
-// ── マルチプレイ設定 ──────────────────────────────────────────
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbzhTnjIbVP8eerYQySPqIqof2CnUK_KammC5NTvr77nwI1FndTFHdd6oycUl-e6Sa53/exec';
+// ── Firebase設定 ──────────────────────────────────────────
+var FIREBASE_URL = 'https://ignis-78c73-default-rtdb.asia-southeast1.firebasedatabase.app';
 var currentPlayer = (new URLSearchParams(location.search)).get('n') || '';
 var t = 0;
 var _lastT = performance.now();
@@ -2501,20 +2501,15 @@ function saveCity(){
     var localData={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
     try{ localStorage.setItem(_saveKey,JSON.stringify(localData)); }catch(e1){}
 
-    // GAS経由でGitHubに保存（iframe方式でCORSを回避）
+    // FirebaseにREST APIで保存（CORSなし！）
     showNotif('💾 共有保存中...');
-    var dataStr = encodeURIComponent(JSON.stringify(localData));
-    var url = GAS_URL + '?action=save&data=' + dataStr;
-
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    setTimeout(function(){
-      document.body.removeChild(iframe);
+    fetch(FIREBASE_URL + '/city_ignis.json', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(localData)
+    }).then(function(r){ return r.json(); }).then(function(){
       showNotif('💾 共有保存完了！('+myBuilds.length+'棟)');
-    }, 3000);
-
+    }).catch(function(e){ showNotif('⚠️ 共有保存失敗'); console.warn(e); });
   }catch(e){ showNotif('⚠️ セーブ失敗'); console.warn('save:',e); }
 }
 
@@ -2561,20 +2556,18 @@ function rebuildItem(type,x,z,player){
 }
 
 function loadCity(onDone){
-  // まずGitHubから共有データを取得
-  var ghUrl = 'https://raw.githubusercontent.com/motomune/IGNIS-game/main/city_data.json?t=' + Date.now();
-  fetch(ghUrl)
+  // FirebaseからリアルタイムDBで取得
+  var fbUrl = FIREBASE_URL + '/city_ignis.json?t=' + Date.now();
+  fetch(fbUrl)
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(data){
       if(data && data.builds && data.builds.length > 0){
         _applyLoadedData(data, onDone);
       } else {
-        // GitHubにデータなし → ローカルから試みる
         _loadFromLocal(onDone);
       }
     })
     .catch(function(){
-      // ネットワークエラー → ローカルから試みる
       _loadFromLocal(onDone);
     });
 }

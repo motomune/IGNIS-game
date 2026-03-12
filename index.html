@@ -14,7 +14,7 @@
   #top-bar{position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;}
   #logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,#ff3300,#ff6600,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,80,0,0.8));}
   #world-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:5px;color:rgba(255,150,50,0.5);}
-  #member-card{position:absolute;bottom:16px;left:16px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,80,0,0.3);border-radius:8px;padding:8px 14px;min-width:160px;backdrop-filter:blur(10px);}
+  #member-card{position:absolute;top:60px;left:16px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,80,0,0.3);border-radius:8px;padding:8px 14px;min-width:160px;backdrop-filter:blur(10px);}
   .rank{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:4px;color:#ff6600;margin-bottom:3px;}
   .name{font-size:15px;font-weight:600;letter-spacing:2px;margin-bottom:6px;}
   .coins{display:flex;align-items:center;gap:7px;}
@@ -54,8 +54,14 @@
   @media(max-width:768px){
     #mobile-controls{display:block;}
     #kb-controls{display:none;}
-    #flight-info{bottom:160px;}
-    #minimap{bottom:140px;}
+    #flight-info{bottom:235px;left:16px;}
+    #minimap{bottom:235px;right:16px;width:65px;height:65px;}
+    #member-card{top:60px;left:16px;padding:5px 10px;min-width:110px;}
+    #build-btn{left:28px;}
+    #recovery-btn{left:28px;}
+    .rank{font-size:7px;}
+    .name{font-size:11px;}
+    .coin-amount{font-size:10px;}
   }
   #loading{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity 1s;}
   #loading.fade{opacity:0;pointer-events:none;}
@@ -85,7 +91,6 @@ color:#ff6644;cursor:pointer;backdrop-filter:blur(10px);transition:all 0.2s;
 @media(max-width:768px){
 #recovery-btn{left:10px;top:calc(50% + 52px);}
 }
-
 #build-menu{
 position:fixed;left:60px;top:50%;transform:translateY(-50%);
 z-index:30;background:rgba(0,0,0,0.92);
@@ -318,7 +323,7 @@ var recoveryMode = false;
 
 // ── Firebase設定 ──────────────────────────────────────────
 var FIREBASE_URL = 'https://ignis-78c73-default-rtdb.asia-southeast1.firebasedatabase.app';
-var currentPlayer = (new URLSearchParams(location.search)).get('n') || '';
+var currentPlayer = (new URLSearchParams(location.search)).get('n') || localStorage.getItem('ignis_player') || '';
 var t = 0;
 var _lastT = performance.now();
 
@@ -2570,7 +2575,7 @@ function rebuildItem(type,x,z,player){
   // 建設者情報をplacedObjectsの最後の要素に付加
   if(player && placedObjects.length > 0){
     var last = placedObjects[placedObjects.length-1];
-    if(last && last.x===x && last.z===z) last.player = player;
+    last.player = player;
   }
 }
 
@@ -2786,15 +2791,7 @@ function initGame(){
   // セーブデータがあればロード
   setTimeout(function(){
     loadCity(function(ok){
-      // セーブデータのplacedObjects（塔・複合ビル以外）を全削除
-      for(var _ci=placedObjects.length-1;_ci>=0;_ci--){
-        doRemoveObject(placedObjects[_ci]);
-      }
-      placedObjects.length=0;
-      playerCoins=15000;
-      updateCoinDisplay();
       if(!ok) showNotif('🗺️ 新しい街を作ろう！');
-      else showNotif('配置物をリセット！コイン15000c！');
     });
   }, 400);
   altEl=document.getElementById('alt-value');
@@ -3124,7 +3121,7 @@ function initGame(){
   (function(){
     var sb=document.createElement('button');
     sb.textContent='💾SAVE';
-    sb.style.cssText='position:absolute;bottom:70px;right:12px;padding:6px 12px;background:rgba(0,80,160,0.85);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;z-index:200;';
+    sb.style.cssText='position:fixed;bottom:308px;right:16px;padding:4px 8px;background:rgba(0,80,160,0.85);color:#fff;border:none;border-radius:6px;font-size:10px;cursor:pointer;z-index:200;';
     sb.addEventListener('click',function(){ saveCity(); });
     document.body.appendChild(sb);
   })();
@@ -3142,13 +3139,13 @@ function initGame(){
       box.style.cssText = 'background:#1a1a2e;border:2px solid #ff8c00;border-radius:12px;padding:30px;text-align:center;color:#fff;max-width:320px;width:90%;';
       box.innerHTML = '<div style="font-size:20px;font-weight:bold;color:#ff8c00;margin-bottom:12px;">🔥 IGNIS WORLD</div>'
         + '<div style="font-size:13px;margin-bottom:16px;">あなたのX IDを入力してください<br><span style="color:#aaa;font-size:11px;">自分が建てたものだけ回収できます</span></div>'
-        + '<input id="player-name-input" type="text" placeholder="例: @soultamash81989" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ff8c00;background:#0a0a1a;color:#fff;font-size:14px;box-sizing:border-box;margin-bottom:14px;">'
+        + '<input id="player-name-input" type="text" placeholder="例: @soultamash81989" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ff8c00;background:#0a0a1a;color:#fff;font-size:16px;box-sizing:border-box;margin-bottom:14px;">'
         + '<button id="player-name-btn" style="width:100%;padding:10px;background:#ff8c00;color:#000;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">🎮 ゲームスタート</button>';
       overlay.appendChild(box);
       document.body.appendChild(overlay);
       document.getElementById('player-name-btn').addEventListener('click', function(){
         var val = document.getElementById('player-name-input').value.trim();
-        if(val){ currentPlayer = val; }
+        if(val){ currentPlayer = val; localStorage.setItem('ignis_player', val); }
         document.body.removeChild(overlay);
         if(currentPlayer) showNotif('ようこそ ' + currentPlayer + ' さん！');
       });

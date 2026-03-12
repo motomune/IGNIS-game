@@ -3282,10 +3282,10 @@ function ignisLoop(){
   pitch=Math.max(-1.0,Math.min(1.0,pitch-jrY*0.035));
   var flatFwd=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
   var right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-  if(keys['KeyW'])vel.addScaledVector(flatFwd,SPD);
-  if(keys['KeyS'])vel.addScaledVector(flatFwd,-SPD*0.7);
-  if(keys['KeyA'])vel.addScaledVector(right,-SPD);
-  if(keys['KeyD'])vel.addScaledVector(right,SPD);
+  if(keys['KeyW']||keys['ArrowUp'])vel.addScaledVector(flatFwd,SPD);
+  if(keys['KeyS']||keys['ArrowDown'])vel.addScaledVector(flatFwd,-SPD*0.7);
+  if(keys['KeyA']||keys['ArrowLeft'])vel.addScaledVector(right,-SPD);
+  if(keys['KeyD']||keys['ArrowRight'])vel.addScaledVector(right,SPD);
   if(keys['Space'])vel.y+=SPD;
   if(keys['ShiftLeft']||keys['ShiftRight'])vel.y-=SPD;
   if(jlX!==0||jlY!==0){vel.addScaledVector(right,jlX*SPD);vel.addScaledVector(flatFwd,-jlY*SPD);}

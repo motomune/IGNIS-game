@@ -747,7 +747,7 @@ function recoverLast(){
   for(var i=0;i<placedObjects.length;i++){
     var o=placedObjects[i];
     if(o.type==='car'||o.type==='bike'||o.type==='person') continue;
-    // 他人のビルドは回収不可
+    // 他人のビルドは回収不可（playerが設定されている場合のみチェック）
     if(currentPlayer && o.player && o.player !== currentPlayer) continue;
     var dx=o.x-cx, dz=o.z-cz;
     var dist=dx*dx+dz*dz;
@@ -2620,7 +2620,7 @@ function _applyLoadedData(data, onDone){
     var builds=data.builds||[];
     builds.forEach(function(b){
       try{
-        rebuildItem(b.t||b.type, b.x, b.z, b.p||'');
+        rebuildItem(b.t||b.type, b.x, b.z, b.p||b.player||currentPlayer||'guest');
         count++;
       }catch(e){}
     });

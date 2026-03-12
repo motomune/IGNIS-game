@@ -32,7 +32,12 @@
   #crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,100,0,0.45);}
   #crosshair::before{width:1px;height:100%;left:50%;top:0;}
   #crosshair::after{width:100%;height:1px;top:50%;left:0;}
-  #kb-controls{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:16px;opacity:0.3;}
+  #kb-controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);border:1px solid rgba(255,80,0,0.3);border-radius:10px;padding:10px 20px;display:flex;gap:18px;align-items:center;backdrop-filter:blur(8px);z-index:20;pointer-events:none;}
+  .kb-group{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .kb-row{display:flex;gap:4px;justify-content:center;}
+  .kb-key{width:28px;height:28px;border-radius:5px;background:rgba(255,80,0,0.15);border:1px solid rgba(255,80,0,0.4);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:9px;color:rgba(255,150,50,0.9);}
+  .kb-label{font-size:8px;letter-spacing:2px;color:rgba(255,100,0,0.5);text-align:center;}
+  .kb-divider{width:1px;height:50px;background:rgba(255,80,0,0.2);}
   .ctrl{display:flex;flex-direction:column;align-items:center;gap:3px;}
   .ctrl-key{font-family:'Orbitron',monospace;font-size:8px;border:1px solid rgba(255,100,0,0.4);border-radius:3px;padding:2px 5px;color:rgba(255,150,50,0.8);}
   .ctrl-desc{font-size:7px;letter-spacing:2px;color:rgba(255,100,0,0.5);}
@@ -145,13 +150,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
     <div><div class="info-label">altitude</div><div class="info-value" id="alt-value">100</div><div class="info-unit">meters</div></div>
     <div><div class="info-label">speed</div><div class="info-value" id="spd-value">0</div><div class="info-unit">km/h</div></div>
   </div>
-  <div id="kb-controls">
-    <div class="ctrl"><div class="ctrl-key">W/S</div><div class="ctrl-desc">前後</div></div>
-    <div class="ctrl"><div class="ctrl-key">A/D</div><div class="ctrl-desc">左右</div></div>
-    <div class="ctrl"><div class="ctrl-key">SPACE</div><div class="ctrl-desc">上昇</div></div>
-    <div class="ctrl"><div class="ctrl-key">SHIFT</div><div class="ctrl-desc">下降</div></div>
-    <div class="ctrl"><div class="ctrl-key">DRAG</div><div class="ctrl-desc">視点</div></div>
-  </div>
+
   <div id="minimap" onclick="toggleMinimap()" style="cursor:pointer;z-index:15;position:absolute;">
     <div id="minimap-label">IGNIS CITY</div>
     <canvas id="minimap-canvas" width="80" height="80"></canvas>
@@ -207,6 +206,25 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
     <div class="build-item" onclick="buildItem('soccer')"><div class="bi-icon">⚽</div><span class="bi-name">SOCCER</span><div class="bi-cost">200c</div></div>
   </div>
   <div id="build-close" onclick="toggleBuildMenu()">✕ CLOSE</div>
+</div>
+
+<div id="kb-controls">
+  <div class="kb-group">
+    <div class="kb-row"><div class="kb-key">↑</div></div>
+    <div class="kb-row"><div class="kb-key">←</div><div class="kb-key">↓</div><div class="kb-key">→</div></div>
+    <div class="kb-label">MOVE</div>
+  </div>
+  <div class="kb-divider"></div>
+  <div class="kb-group">
+    <div class="kb-row"><div class="kb-key">SPC</div></div>
+    <div class="kb-row"><div class="kb-key">SFT</div></div>
+    <div class="kb-label">UP / DOWN</div>
+  </div>
+  <div class="kb-divider"></div>
+  <div class="kb-group">
+    <div class="kb-row"><div class="kb-key" style="width:44px">DRAG</div></div>
+    <div class="kb-label">LOOK</div>
+  </div>
 </div>
 
 <div id="mobile-controls">

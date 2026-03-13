@@ -2620,9 +2620,26 @@ function _applyLoadedData(data, onDone){
     var builds=data.builds||[];
     builds.forEach(function(b){
       try{
+        var beforeCount = scene.children.length;
+        var beforePlaced = placedObjects.length;
         rebuildItem(b.t||b.type, b.x, b.z, b.p||b.player||currentPlayer||'guest');
+        // rebuildItemがplacedObjectsに追加しなかった場合は手動で追加
+        if(placedObjects.length === beforePlaced){
+          var newMeshes = scene.children.slice(beforeCount);
+          placedObjects.push({
+            meshes: newMeshes,
+            type: b.t||b.type,
+            cost: 0,
+            x: b.x,
+            z: b.z,
+            player: b.p||b.player||currentPlayer||'guest'
+          });
+        } else {
+          // rebuildItemが追加した場合はplayerを確実に設定
+          placedObjects[placedObjects.length-1].player = b.p||b.player||currentPlayer||'guest';
+        }
         count++;
-      }catch(e){}
+      }catch(e){ console.warn('rebuildItem error:', e); }
     });
     showNotif('📂 ロード完了！ '+count+'棟復元');
     if(onDone) onDone(true);

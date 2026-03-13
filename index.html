@@ -402,7 +402,7 @@ function showNotif(msg){
 }
 
 function trackPlaced(meshes, type, cost, x, z){
-  placedObjects.push({meshes: meshes.slice(), type: type, cost: cost, x: x, z: z});
+  placedObjects.push({meshes: meshes.slice(), type: type, cost: cost, x: x, z: z, player: currentPlayer||'guest'});
 }
 
 function growKey(x,z,type){ return x+'_'+z+'_'+type; }
@@ -547,15 +547,15 @@ function buildItem(type){
     var pos=placePos();
     var x=pos.x, z=pos.z;
 
-    if(type==='grass'){ var b0=scene.children.length; buildGrass(x,z); placedObjects.push({meshes:scene.children.slice(b0),type:type,cost:cost,x:x,z:z}); showNotif('草むらを配置！'); }
-    else if(type==='tree'){ var b1=scene.children.length; buildTree(x,z); placedObjects.push({meshes:scene.children.slice(b1),type:type,cost:cost,x:x,z:z}); showNotif('木を植えました！'); }
-    else if(type==='river'){ var b2=scene.children.length; buildRiver(x,z); placedObjects.push({meshes:scene.children.slice(b2),type:type,cost:cost,x:x,z:z}); showNotif('川を配置！'); }
-    else if(type==='lake'){ var b3=scene.children.length; buildLake(x,z); placedObjects.push({meshes:scene.children.slice(b3),type:type,cost:cost,x:x,z:z}); showNotif('湖を作成！'); }
-    else if(type==='fountain'){ var b4=scene.children.length; buildFountain(x,z); placedObjects.push({meshes:scene.children.slice(b4),type:type,cost:cost,x:x,z:z}); showNotif('噴水を設置！'); }
-    else if(type==='gym'){ var b5=scene.children.length; buildGym(x,z); placedObjects.push({meshes:scene.children.slice(b5),type:type,cost:cost,x:x,z:z}); showNotif('体育館！'); }
-    else if(type==='schoolyard'){ var b6=scene.children.length; buildSchoolyard(x,z); placedObjects.push({meshes:scene.children.slice(b6),type:type,cost:cost,x:x,z:z}); showNotif('校庭！'); }
-    else if(type==='tennis'){ var b7=scene.children.length; buildTennisCourt(x,z); placedObjects.push({meshes:scene.children.slice(b7),type:type,cost:cost,x:x,z:z}); showNotif('テニスコート！'); }
-    else if(type==='soccer'){ var b8=scene.children.length; buildSoccerField(x,z); placedObjects.push({meshes:scene.children.slice(b8),type:type,cost:cost,x:x,z:z}); showNotif('サッカー場！'); }
+    if(type==='grass'){ var b0=scene.children.length; buildGrass(x,z); placedObjects.push({meshes:scene.children.slice(b0),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('草むらを配置！'); }
+    else if(type==='tree'){ var b1=scene.children.length; buildTree(x,z); placedObjects.push({meshes:scene.children.slice(b1),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('木を植えました！'); }
+    else if(type==='river'){ var b2=scene.children.length; buildRiver(x,z); placedObjects.push({meshes:scene.children.slice(b2),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('川を配置！'); }
+    else if(type==='lake'){ var b3=scene.children.length; buildLake(x,z); placedObjects.push({meshes:scene.children.slice(b3),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('湖を作成！'); }
+    else if(type==='fountain'){ var b4=scene.children.length; buildFountain(x,z); placedObjects.push({meshes:scene.children.slice(b4),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('噴水を設置！'); }
+    else if(type==='gym'){ var b5=scene.children.length; buildGym(x,z); placedObjects.push({meshes:scene.children.slice(b5),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('体育館！'); }
+    else if(type==='schoolyard'){ var b6=scene.children.length; buildSchoolyard(x,z); placedObjects.push({meshes:scene.children.slice(b6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('校庭！'); }
+    else if(type==='tennis'){ var b7=scene.children.length; buildTennisCourt(x,z); placedObjects.push({meshes:scene.children.slice(b7),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('テニスコート！'); }
+    else if(type==='soccer'){ var b8=scene.children.length; buildSoccerField(x,z); placedObjects.push({meshes:scene.children.slice(b8),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('サッカー場！'); }
     else if(type==='road'){
       var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92}));
       rm.rotation.x=-Math.PI/2; rm.position.set(x,0.12,z); rm.receiveShadow=true; scene.add(rm);
@@ -564,7 +564,7 @@ function buildItem(type){
       var lm2=new THREE.Mesh(new THREE.PlaneGeometry(isNS?TILE*0.06:TILE, isNS?TILE:TILE*0.06),new THREE.MeshBasicMaterial({color:0xffdd00,transparent:true,opacity:0.45}));
       lm2.rotation.x=-Math.PI/2; lm2.position.set(x,0.13,z); scene.add(lm2);
       var rk=x+'_'+z; roadTiles.add(rk);
-      placedObjects.push({meshes:[rm,lm2],type:'road',cost:cost,x:x,z:z,roadKey:rk});
+      placedObjects.push({meshes:[rm,lm2],type:'road',cost:cost,x:x,z:z,roadKey:rk,player:currentPlayer||"guest"});
       showNotif('道路を敷設！');
     }
     else if(type==='roadcurveR'){ buildRoadCurve(x,z,'right',pos.dir); showNotif('右カーブ！'); }
@@ -575,7 +575,7 @@ function buildItem(type){
       else if(growRegistry[slk].level<3) growRegistry[slk].level++;
       else{ showNotif('坂はLv3が最大！'); return; }
       buildGrowableSlope(x,z,pos.dir);
-      placedObjects.push({meshes:growRegistry[slk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:slk});
+      placedObjects.push({meshes:growRegistry[slk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:slk,player:currentPlayer||"guest"});
       showNotif('坂道 Lv'+growRegistry[slk].level+'！');
     }
     else if(type==='streetlight'){ buildStreetlight(x,z,1); showNotif('街灯！'); }
@@ -590,17 +590,17 @@ function buildItem(type){
       else if(growRegistry[brk].level<3) growRegistry[brk].level++;
       else{ showNotif('橋はLv3が最大！'); return; }
       buildGrowableBridge(x,z,pos.dir);
-      placedObjects.push({meshes:growRegistry[brk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:brk});
+      placedObjects.push({meshes:growRegistry[brk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:brk,player:currentPlayer||"guest"});
       var bNames=['シンプル桁橋','斜張橋','レインボーブリッジ'];
       showNotif('橋 Lv'+growRegistry[brk].level+' '+bNames[growRegistry[brk].level-1]+'！');
     }
-    else if(type==='footbridge'){ var fm=buildFootbridge(x,z); placedObjects.push({meshes:fm,type:type,cost:cost,x:x,z:z}); showNotif('歩道橋！'); }
+    else if(type==='footbridge'){ var fm=buildFootbridge(x,z); placedObjects.push({meshes:fm,type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('歩道橋！'); }
     else if(type==='mountain'){
       var mk=growKey(x,z,'mountain');
       if(!growRegistry[mk]) growRegistry[mk]={level:1,meshes:[]};
       else growRegistry[mk].level++;
       addGrowableMountain(x,z);
-      placedObjects.push({meshes:growRegistry[mk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:mk});
+      placedObjects.push({meshes:growRegistry[mk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:mk,player:currentPlayer||"guest"});
       showNotif('山 Lv'+growRegistry[mk].level+'！');
     }
     else if(type==='house'){
@@ -608,7 +608,7 @@ function buildItem(type){
       if(!growRegistry[hk]) growRegistry[hk]={level:1,meshes:[]};
       else growRegistry[hk].level=Math.min(growRegistry[hk].level+1,5);
       addGrowableHouse(x,z);
-      placedObjects.push({meshes:growRegistry[hk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:hk});
+      placedObjects.push({meshes:growRegistry[hk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:hk,player:currentPlayer||"guest"});
       showNotif('一軒家 Lv'+growRegistry[hk].level+'！');
     }
     else if(type==='glassbuilding'){
@@ -622,7 +622,7 @@ function buildItem(type){
       if(!growRegistry[bk]) growRegistry[bk]={level:1,meshes:[]};
       else growRegistry[bk].level++;
       addGrowableBuilding(x,z,TILE*0.85,TILE*0.85,TILE);
-      placedObjects.push({meshes:growRegistry[bk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:bk});
+      placedObjects.push({meshes:growRegistry[bk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:bk,player:currentPlayer||"guest"});
       showNotif('ビル '+growRegistry[bk].level+'F！');
     }
     else if(type==='school'){
@@ -631,40 +631,40 @@ function buildItem(type){
       else if(growRegistry[sk].level<5) growRegistry[sk].level++;
       else{ showNotif('学校は5階が最大！'); return; }
       addGrowableSchool(x,z);
-      placedObjects.push({meshes:growRegistry[sk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:sk});
+      placedObjects.push({meshes:growRegistry[sk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:sk,player:currentPlayer||"guest"});
       showNotif('学校 '+growRegistry[sk].level+'F！');
     }
     else if(type==='cherry'){
       buildCherryTree(x,z);
-      placedObjects.push({meshes:scene.children.slice(scene.children.length-16),type:type,cost:cost,x:x,z:z});
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-16),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
       showNotif('桜！');
     }
     else if(type==='broadleaf'){
       buildBroadleafTree(x,z);
-      placedObjects.push({meshes:scene.children.slice(scene.children.length-12),type:type,cost:cost,x:x,z:z});
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-12),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
       showNotif('広葉樹！');
     }
     else if(type==='conifer'){
       buildConiferTree(x,z);
-      placedObjects.push({meshes:scene.children.slice(scene.children.length-6),type:type,cost:cost,x:x,z:z});
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
       showNotif('針葉樹！');
     }
     else if(type==='sidewalk'){
       var swStart=scene.children.length;
       buildSidewalk(x,z);
       var swk=x+'_'+z;
-      placedObjects.push({meshes:scene.children.slice(swStart),type:type,cost:cost,x:x,z:z,roadKey:swk});
+      placedObjects.push({meshes:scene.children.slice(swStart),type:type,cost:cost,x:x,z:z,roadKey:swk,player:currentPlayer||"guest"});
       showNotif('歩道を設置！');
     }
     else if(type==='intersection'){
       buildIntersection(x,z);
       var rk=x+'_'+z; roadTiles.add(rk);
-      placedObjects.push({meshes:scene.children.slice(scene.children.length-37),type:type,cost:cost,x:x,z:z,roadKey:rk});
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-37),type:type,cost:cost,x:x,z:z,roadKey:rk,player:currentPlayer||"guest"});
       showNotif('交差点！');
     }
     else if(type==='paddy'){
       var paddyMeshes=addRicePaddy(x,z);
-      placedObjects.push({meshes:paddyMeshes,type:type,cost:cost,x:x,z:z});
+      placedObjects.push({meshes:paddyMeshes,type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
       showNotif('田んぼ！');
     }
     else{ showNotif('未対応: '+type); }
@@ -1126,7 +1126,7 @@ function buildStreetlight(x,z,dir){
   // 光源
   var light=new THREE.PointLight(0xffffcc,3.5,50);
   light.position.set(x+d*3.1,9.1,z); scene.add(light); bm.push(light);
-  placedObjects.push({meshes:bm,type:'streetlight',cost:BUILD_COSTS.streetlight,x:x,z:z});
+  placedObjects.push({meshes:bm,type:'streetlight',cost:BUILD_COSTS.streetlight,x:x,z:z,player:currentPlayer||"guest"});
 }
 
 function buildGrowableBridge(x,z,facing){

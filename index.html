@@ -606,7 +606,7 @@ function buildItem(type){
     else if(type==='house'){
       var hk=growKey(x,z,'house');
       if(!growRegistry[hk]) growRegistry[hk]={level:1,meshes:[]};
-      else growRegistry[hk].level=Math.min(growRegistry[hk].level+1,5);
+      else { growRegistry[hk].level=1; }
       addGrowableHouse(x,z);
       placedObjects.push({meshes:growRegistry[hk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:hk,player:currentPlayer||"guest"});
       showNotif('一軒家 Lv'+growRegistry[hk].level+'！');
@@ -614,13 +614,13 @@ function buildItem(type){
     else if(type==='glassbuilding'){
       var gbk=growKey(x,z,'glassbuilding');
       if(!growRegistry[gbk]) growRegistry[gbk]={level:1,meshes:[]};
-      else growRegistry[gbk].level=Math.min(growRegistry[gbk].level+1,15);
+      else { growRegistry[gbk].level=1; }
       addGrowableGlassBuilding(x,z);
     }
     else if(type==='building'){
       var bk=growKey(x,z,'building');
       if(!growRegistry[bk]) growRegistry[bk]={level:1,meshes:[]};
-      else growRegistry[bk].level++;
+      else { growRegistry[bk].level=1; } // 同じ座標に新規建設時はlevel=1にリセット
       addGrowableBuilding(x,z,TILE*0.85,TILE*0.85,TILE);
       placedObjects.push({meshes:growRegistry[bk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:bk,player:currentPlayer||"guest"});
       showNotif('ビル '+growRegistry[bk].level+'F！');

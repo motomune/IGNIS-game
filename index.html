@@ -2805,12 +2805,6 @@ function initGame(){
     bc2.position.set(CX,BH+antH,CZ); scene.add(bc2);
     beaconMeshes.push({core:bc1,glow:bc2,phase:0});
   })();
-  // セーブデータがあればロード
-  setTimeout(function(){
-    loadCity(function(ok){
-      if(!ok) showNotif('🗺️ 新しい街を作ろう！');
-    });
-  }, 400);
   altEl=document.getElementById('alt-value');
   spdEl=document.getElementById('spd-value');
 

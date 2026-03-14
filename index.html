@@ -14,7 +14,7 @@
   #top-bar{position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;}
   #logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,#ff3300,#ff6600,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,80,0,0.8));}
   #world-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:5px;color:rgba(255,150,50,0.5);}
-  #member-card{position:absolute;top:60px;left:16px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,80,0,0.3);border-radius:8px;padding:8px 14px;min-width:160px;backdrop-filter:blur(10px);}
+  #member-card{position:absolute;top:60px;left:16px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,80,0,0.3);border-radius:8px;padding:8px 14px;min-width:160px;backdrop-filter:blur(10px);pointer-events:all;}
   .rank{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:4px;color:#ff6600;margin-bottom:3px;}
   .name{font-size:15px;font-weight:600;letter-spacing:2px;margin-bottom:6px;}
   .coins{display:flex;align-items:center;gap:7px;}
@@ -3146,7 +3146,7 @@ function initGame(){
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
   // Firebase会員チェック
   function checkMembership(xid, callback){
-    var cleanId = xid.replace('@','');
+    var cleanId = encodeURIComponent(xid.replace('@',''));
     fetch(FIREBASE_URL + '/members/' + cleanId + '.json')
       .then(function(r){ return r.json(); })
       .then(function(d){ callback(d && d.rank ? true : false); })

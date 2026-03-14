@@ -324,6 +324,7 @@ var recoveryMode = false;
 // ── Firebase設定 ──────────────────────────────────────────
 var FIREBASE_URL = 'https://ignis-78c73-default-rtdb.asia-southeast1.firebasedatabase.app';
 var currentPlayer = (new URLSearchParams(location.search)).get('n') || localStorage.getItem('ignis_player') || '';
+var isMember = false;
 var t = 0;
 var _lastT = performance.now();
 
@@ -538,6 +539,7 @@ function placePos(){
 }
 
 function buildItem(type){
+  if(!isMember){ showNotif('👁️ 探検モードです。建設は会員のみ！'); return; }
   try{
     var cost=BUILD_COSTS[type]||0;
     if(playerCoins<cost){ showNotif('コインが足りません ('+cost+'c必要)'); return; }
@@ -733,6 +735,7 @@ function doRemoveObject(obj){
 }
 
 function recoverLast(){
+  if(!isMember){ showNotif('👁️ 探検モードです。回収は会員のみ！'); return; }
   var btn=document.getElementById('recovery-btn');
   btn.classList.remove('active');
   btn.textContent='UNDO';
@@ -3140,29 +3143,77 @@ function initGame(){
   setInterval(function(){ saveCity(); }, 300000);
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
+  // Firebase会員チェック
+  function checkMembership(xid, callback){
+    var cleanId = xid.replace('@','');
+    fetch(FIREBASE_URL + '/members/' + cleanId + '.json')
+      .then(function(r){ return r.json(); })
+      .then(function(d){ callback(d && d.rank ? true : false); })
+      .catch(function(){ callback(false); });
+  }
 
-  // プレイヤー名が未設定なら入力を促す（ゲーム起動後に表示）
-  if(!currentPlayer){
-    setTimeout(function(){
-      var overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
-      var box = document.createElement('div');
-      box.style.cssText = 'background:#1a1a2e;border:2px solid #ff8c00;border-radius:12px;padding:30px;text-align:center;color:#fff;max-width:320px;width:90%;';
-      box.innerHTML = '<div style="font-size:20px;font-weight:bold;color:#ff8c00;margin-bottom:12px;">🔥 IGNIS WORLD</div>'
-        + '<div style="font-size:13px;margin-bottom:16px;">あなたのX IDを入力してください<br><span style="color:#aaa;font-size:11px;">自分が建てたものだけ回収できます</span></div>'
-        + '<input id="player-name-input" type="text" placeholder="例: @soultamash81989" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ff8c00;background:#0a0a1a;color:#fff;font-size:16px;box-sizing:border-box;margin-bottom:14px;">'
-        + '<button id="player-name-btn" style="width:100%;padding:10px;background:#ff8c00;color:#000;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;">🎮 ゲームスタート</button>';
-      overlay.appendChild(box);
-      document.body.appendChild(overlay);
-      document.getElementById('player-name-btn').addEventListener('click', function(){
-        var val = document.getElementById('player-name-input').value.trim();
-        if(val){ currentPlayer = val; localStorage.setItem('ignis_player', val); }
+  function updateMemberCard(){
+    var nameEl = document.querySelector('#member-card .name');
+    if(nameEl) nameEl.textContent = currentPlayer || 'GUEST';
+    var rankEl = document.querySelector('#member-card .rank');
+    if(rankEl) rankEl.textContent = isMember ? '✅ IGNIS MEMBER' : '👁️ EXPLORER';
+  }
+
+  function showLoginDialog(){
+    var overlay = document.createElement('div');
+    overlay.id = 'login-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#1a1a2e;border:2px solid #ff8c00;border-radius:12px;padding:30px;text-align:center;color:#fff;max-width:320px;width:90%;';
+    box.innerHTML = '<div style="font-size:20px;font-weight:bold;color:#ff8c00;margin-bottom:12px;">🔥 IGNIS WORLD</div>'
+      + '<div style="font-size:13px;margin-bottom:16px;">あなたのX IDを入力してください<br><span style="color:#aaa;font-size:11px;">会員は建設・回収OK / 非会員は探検のみ</span></div>'
+      + '<input id="player-name-input" type="text" placeholder="例: @soultamash81989" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ff8c00;background:#0a0a1a;color:#fff;font-size:16px;box-sizing:border-box;margin-bottom:8px;">'
+      + '<button id="player-name-btn" style="width:100%;padding:10px;background:#ff8c00;color:#000;border:none;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;margin-bottom:8px;">🎮 ゲームスタート</button>'
+      + '<button id="guest-btn" style="width:100%;padding:8px;background:transparent;color:#aaa;border:1px solid #444;border-radius:6px;font-size:12px;cursor:pointer;">👁️ 探検のみで入る</button>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.getElementById('player-name-btn').addEventListener('click', function(){
+      var val = document.getElementById('player-name-input').value.trim();
+      if(!val){ showNotif('X IDを入力してください'); return; }
+      var btn = document.getElementById('player-name-btn');
+      btn.textContent = '確認中...';
+      btn.disabled = true;
+      checkMembership(val, function(ok){
+        currentPlayer = val;
+        localStorage.setItem('ignis_player', val);
+        isMember = ok;
         document.body.removeChild(overlay);
-        if(currentPlayer) showNotif('ようこそ ' + currentPlayer + ' さん！');
+        updateMemberCard();
+        if(ok){
+          showNotif('🔥 ようこそ会員 ' + val + ' さん！建設・回収OK！');
+        } else {
+          showNotif('👁️ ' + val + ' さん、探検モードで入場！');
+        }
       });
-    }, 1500);
+    });
+    document.getElementById('guest-btn').addEventListener('click', function(){
+      isMember = false;
+      document.body.removeChild(overlay);
+      showNotif('👁️ ゲストとして探検中...');
+    });
+  }
+
+  // プレイヤー名が未設定なら入力を促す
+  if(!currentPlayer){
+    setTimeout(function(){ showLoginDialog(); }, 1500);
   } else {
-    setTimeout(function(){ showNotif('ようこそ ' + currentPlayer + ' さん！'); }, 1500);
+    // 保存済みIDがあれば自動で会員チェック
+    checkMembership(currentPlayer, function(ok){
+      isMember = ok;
+      updateMemberCard();
+      setTimeout(function(){
+        if(ok){
+          showNotif('🔥 ようこそ会員 ' + currentPlayer + ' さん！');
+        } else {
+          showNotif('👁️ ようこそ ' + currentPlayer + ' さん（探検モード）');
+        }
+      }, 1500);
+    });
   }
 }
 

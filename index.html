@@ -54,7 +54,7 @@
   @media(max-width:768px){
     #mobile-controls{display:block;}
     #kb-controls{display:none;}
-    #flight-info{bottom:235px;left:16px;}
+    #flight-info{bottom:275px;left:16px;}
     #minimap{bottom:235px;right:16px;width:65px;height:65px;}
     #member-card{top:60px;left:16px;padding:5px 10px;min-width:110px;}
     #build-btn{left:28px;}
@@ -149,6 +149,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
     <div class="rank">RANK 4 — 虹</div>
     <div class="name">MEMBER</div>
     <div class="coins"><div class="coin-icon"></div><div class="coin-amount">2,480</div><div style="font-size:9px;color:rgba(255,150,50,0.5);letter-spacing:2px;">COINS</div></div>
+    <div onclick="localStorage.removeItem('ignis_player');location.reload();" style="font-size:9px;color:rgba(255,150,80,0.8);letter-spacing:1px;cursor:pointer;margin-top:6px;text-align:center;border-top:1px solid rgba(255,80,0,0.2);padding-top:5px;font-family:Orbitron,monospace;">⇄ CHANGE ID</div>
   </div>
   <div id="crosshair"></div>
   <div id="flight-info">

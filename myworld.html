@@ -3198,7 +3198,23 @@ function initGame(){
     var cleanId = encodeURIComponent(xid.replace('@',''));
     fetch(FIREBASE_URL + '/members/' + cleanId + '.json')
       .then(function(r){ return r.json(); })
-      .then(function(d){ callback(d && d.rank ? d.rank : false); })
+      .then(function(d){
+        if(d && d.rank){
+          // コイン残高もFirebaseから取得
+          fetch(FIREBASE_URL + '/coins/' + cleanId + '.json')
+            .then(function(r2){ return r2.json(); })
+            .then(function(coins){
+              if(coins !== null && !isNaN(Number(coins))){
+                playerCoins = Number(coins);
+                updateCoinDisplay();
+              }
+              callback(d.rank);
+            })
+            .catch(function(){ callback(d.rank); });
+        } else {
+          callback(false);
+        }
+      })
       .catch(function(){ callback(false); });
   }
 

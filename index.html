@@ -3158,7 +3158,23 @@ function initGame(){
     var cleanId = encodeURIComponent(xid.replace('@',''));
     fetch(FIREBASE_URL + '/members/' + cleanId + '.json')
       .then(function(r){ return r.json(); })
-      .then(function(d){ callback(d && d.rank ? d.rank : false); })
+      .then(function(d){
+        if(d && d.rank){
+          // コイン残高もFirebaseから取得
+          fetch(FIREBASE_URL + '/coins/' + cleanId + '.json')
+            .then(function(r2){ return r2.json(); })
+            .then(function(coins){
+              if(coins !== null && !isNaN(Number(coins))){
+                playerCoins = Number(coins);
+                updateCoinDisplay();
+              }
+              callback(d.rank);
+            })
+            .catch(function(){ callback(d.rank); });
+        } else {
+          callback(false);
+        }
+      })
       .catch(function(){ callback(false); });
   }
 
@@ -3168,10 +3184,11 @@ function initGame(){
     var rankEl = document.querySelector('#member-card .rank');
     if(rankEl){
       if(isMember){
-        var rankLabels = {'RANK1':'RANK1 - WHITE','RANK2':'RANK2 - RED','RANK3':'RANK3 - GOLD','RANK4':'RANK4 - RAINBOW'};
-        var rankColors = {'RANK1':'#aaaaaa','RANK2':'#ff4444','RANK3':'#d4a017','RANK4':'#8b00ff'};
-        rankEl.textContent = (rankLabels[isMember] || isMember) + ' — MEMBER';
-        rankEl.style.color = rankColors[isMember] || '#ff6600';
+        var rankNums = {'RANK1':'RANK 1','RANK2':'RANK 2','RANK3':'RANK 3','RANK4':'RANK 4'};
+        var rankNames = {'RANK1':'WHITE','RANK2':'RED','RANK3':'GOLD','RANK4':'RAINBOW'};
+        var rankColors = {'RANK1':'#ffffff','RANK2':'#ff4444','RANK3':'#d4a017','RANK4':'#8b00ff'};
+        var rankNameColors = {'RANK1':'#aaaaaa','RANK2':'#ff4444','RANK3':'#d4a017','RANK4':'#8b00ff'};
+        rankEl.innerHTML = '<span style="color:#ffffff;font-weight:700;">' + (rankNums[isMember]||isMember) + '</span> — <span style="color:' + (rankNameColors[isMember]||'#ff6600') + ';">' + (rankNames[isMember]||'') + '</span>';
       } else {
         rankEl.textContent = '👁️ EXPLORER';
         rankEl.style.color = 'rgba(255,100,50,0.6)';

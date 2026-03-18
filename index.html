@@ -114,7 +114,7 @@ border-radius:8px;padding:8px 4px;cursor:pointer;transition:all 0.15s;text-align
 .bi-icon{font-size:18px;line-height:1.2;}
 .bi-name{font-family:‘Orbitron’,monospace;font-size:7px;letter-spacing:1px;color:#ff8800;
 display:block;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bi-cost{font-size:8px;color:rgba(255,150,50,0.55);margin-top:1px;}
+.bi-cost{font-size:9px;font-weight:700;color:rgba(255,180,60,0.95);margin-top:2px;text-shadow:0 0 6px rgba(255,120,0,0.7);}
 #build-close{display:block;text-align:center;margin-top:8px;padding:6px;
 font-family:‘Orbitron’,monospace;font-size:9px;letter-spacing:3px;
 color:rgba(255,80,0,0.5);cursor:pointer;border-top:1px solid rgba(255,80,0,0.15);}
@@ -165,51 +165,51 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
   <div id="notification">IGNIS CITY — 全エリア解放済み</div>
 </div>
 
-<div id="build-btn" onclick="toggleBuildMenu()">BUILD</div>
-<div id="recovery-btn" onclick="toggleRecoveryMode()">UNDO</div>
+<div id="build-btn" onclick="toggleBuildMenu()">BUILD<br><span style="font-size:9px;letter-spacing:2px;">設置</span></div>
+<div id="recovery-btn" onclick="toggleRecoveryMode()">UNDO<br><span style="font-size:9px;letter-spacing:2px;">回収</span></div>
 <div id="build-menu">
   <h3>⚙ BUILD MENU</h3>
   <div class="build-section">NATURE</div>
   <div class="build-grid">
-    <div class="build-item" onclick="buildItem('grass')"><div class="bi-icon">🌿</div><span class="bi-name">GRASS</span><div class="bi-cost">5c</div></div>
-    <div class="build-item" onclick="buildItem('cherry')"><div class="bi-icon">🌸</div><span class="bi-name">桜</span><div class="bi-cost">15c</div></div>
-    <div class="build-item" onclick="buildItem('broadleaf')"><div class="bi-icon">🌳</div><span class="bi-name">広葉樹</span><div class="bi-cost">12c</div></div>
-    <div class="build-item" onclick="buildItem('conifer')"><div class="bi-icon">🌲</div><span class="bi-name">針葉樹</span><div class="bi-cost">12c</div></div>
-    <div class="build-item" onclick="buildItem('mountain')"><div class="bi-icon">⛰️</div><span class="bi-name">MOUNTAIN</span><div class="bi-cost">150c</div></div>
-    <div class="build-item" onclick="buildItem('river')"><div class="bi-icon">🌊</div><span class="bi-name">RIVER</span><div class="bi-cost">80c</div></div>
-    <div class="build-item" onclick="buildItem('lake')"><div class="bi-icon">💧</div><span class="bi-name">LAKE</span><div class="bi-cost">120c</div></div>
-    <div class="build-item" onclick="buildItem('fountain')"><div class="bi-icon">⛲</div><span class="bi-name">FOUNTAIN</span><div class="bi-cost">60c</div></div>
+    <div class="build-item" onclick="buildItem('grass')"><div class="bi-icon">🌿</div><span class="bi-name">GRASS<br>草地</span><div class="bi-cost">💰5c</div></div>
+    <div class="build-item" onclick="buildItem('cherry')"><div class="bi-icon">🌸</div><span class="bi-name">CHERRY<br>桜</span><div class="bi-cost">💰15c</div></div>
+    <div class="build-item" onclick="buildItem('broadleaf')"><div class="bi-icon">🌳</div><span class="bi-name">広葉樹<br>TREE</span><div class="bi-cost">💰12c</div></div>
+    <div class="build-item" onclick="buildItem('conifer')"><div class="bi-icon">🌲</div><span class="bi-name">針葉樹<br>PINE</span><div class="bi-cost">💰12c</div></div>
+    <div class="build-item" onclick="buildItem('mountain')"><div class="bi-icon">⛰️</div><span class="bi-name">MOUNTAIN<br>山</span><div class="bi-cost">💰150c</div></div>
+    <div class="build-item" onclick="buildItem('river')"><div class="bi-icon">🌊</div><span class="bi-name">RIVER<br>川</span><div class="bi-cost">💰80c</div></div>
+    <div class="build-item" onclick="buildItem('lake')"><div class="bi-icon">💧</div><span class="bi-name">LAKE<br>湖</span><div class="bi-cost">💰120c</div></div>
+    <div class="build-item" onclick="buildItem('fountain')"><div class="bi-icon">⛲</div><span class="bi-name">FOUNTAIN<br>噴水</span><div class="bi-cost">💰60c</div></div>
   </div>
   <div class="build-section">ROAD & TRANSPORT</div>
   <div class="build-grid">
-    <div class="build-item" onclick="buildItem('sidewalk')"><div class="bi-icon">🚶</div><span class="bi-name">歩道</span><div class="bi-cost">10c</div></div>
-    <div class="build-item" onclick="buildItem('road')"><div class="bi-icon">&#x1F6E3;</div><span class="bi-name">ROAD</span><div class="bi-cost">20c</div></div>
-    <div class="build-item" onclick="buildItem('roadcurveR')"><div class="bi-icon">&#x27A1;</div><span class="bi-name">CURVE R</span><div class="bi-cost">20c</div></div>
-    <div class="build-item" onclick="buildItem('roadcurveL')"><div class="bi-icon">&#x2B05;</div><span class="bi-name">CURVE L</span><div class="bi-cost">20c</div></div>
-    <div class="build-item" onclick="buildItem('slope')"><div class="bi-icon">📐</div><span class="bi-name">SLOPE</span><div class="bi-cost">40c</div></div>
-    <div class="build-item" onclick="buildItem('intersection')"><div class="bi-icon">✛</div><span class="bi-name">交差点</span><div class="bi-cost">30c</div></div>
-    <div class="build-item" onclick="buildItem('streetlightR')"><div class="bi-icon">💡</div><span class="bi-name">街灯→</span><div class="bi-cost">15c</div></div>
-    <div class="build-item" onclick="buildItem('streetlightL')"><div class="bi-icon">💡</div><span class="bi-name">街灯←</span><div class="bi-cost">15c</div></div>
-    <div class="build-item" onclick="buildItem('bridge')"><div class="bi-icon">&#x1F309;</div><span class="bi-name">BRIDGE</span><div class="bi-cost">100c</div></div>
-    <div class="build-item" onclick="buildItem('footbridge')"><div class="bi-icon">&#x1F6B6;</div><span class="bi-name">WALKWAY</span><div class="bi-cost">60c</div></div>
-    <div class="build-item" onclick="buildItem('car')"><div class="bi-icon">&#x1F697;</div><span class="bi-name">CAR</span><div class="bi-cost">30c</div></div>
-    <div class="build-item" onclick="buildItem('bike')"><div class="bi-icon">&#x1F3CD;</div><span class="bi-name">BIKE</span><div class="bi-cost">20c</div></div>
-    <div class="build-item" onclick="buildItem('person')"><div class="bi-icon">&#x1F9CD;</div><span class="bi-name">PERSON</span><div class="bi-cost">5c</div></div>
+    <div class="build-item" onclick="buildItem('sidewalk')"><div class="bi-icon">🚶</div><span class="bi-name">SIDEWALK<br>歩道</span><div class="bi-cost">💰10c</div></div>
+    <div class="build-item" onclick="buildItem('road')"><div class="bi-icon">&#x1F6E3;</div><span class="bi-name">ROAD<br>道路</span><div class="bi-cost">💰20c</div></div>
+    <div class="build-item" onclick="buildItem('roadcurveR')"><div class="bi-icon">&#x27A1;</div><span class="bi-name">CURVE R<br>右曲</span><div class="bi-cost">💰20c</div></div>
+    <div class="build-item" onclick="buildItem('roadcurveL')"><div class="bi-icon">&#x2B05;</div><span class="bi-name">CURVE L<br>左曲</span><div class="bi-cost">💰20c</div></div>
+    <div class="build-item" onclick="buildItem('slope')"><div class="bi-icon">📐</div><span class="bi-name">SLOPE<br>坂道</span><div class="bi-cost">💰40c</div></div>
+    <div class="build-item" onclick="buildItem('intersection')"><div class="bi-icon">✛</div><span class="bi-name">CROSS<br>交差点</span><div class="bi-cost">💰30c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightR')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT R<br>街灯→</span><div class="bi-cost">💰15c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightL')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT L<br>街灯←</span><div class="bi-cost">💰15c</div></div>
+    <div class="build-item" onclick="buildItem('bridge')"><div class="bi-icon">&#x1F309;</div><span class="bi-name">BRIDGE<br>橋</span><div class="bi-cost">💰100c</div></div>
+    <div class="build-item" onclick="buildItem('footbridge')"><div class="bi-icon">&#x1F6B6;</div><span class="bi-name">WALKWAY<br>歩道橋</span><div class="bi-cost">💰60c</div></div>
+    <div class="build-item" onclick="buildItem('car')"><div class="bi-icon">&#x1F697;</div><span class="bi-name">CAR<br>車</span><div class="bi-cost">💰30c</div></div>
+    <div class="build-item" onclick="buildItem('bike')"><div class="bi-icon">&#x1F3CD;</div><span class="bi-name">BIKE<br>バイク</span><div class="bi-cost">💰20c</div></div>
+    <div class="build-item" onclick="buildItem('person')"><div class="bi-icon">&#x1F9CD;</div><span class="bi-name">PERSON<br>人</span><div class="bi-cost">💰5c</div></div>
   </div>
   <div class="build-section">BUILDINGS</div>
   <div class="build-grid">
-    <div class="build-item" onclick="buildItem('house')"><div class="bi-icon">🏠</div><span class="bi-name">HOUSE</span><div class="bi-cost">80c</div></div>
-    <div class="build-item" onclick="buildItem('building')"><div class="bi-icon">🏢</div><span class="bi-name">BUILDING</span><div class="bi-cost">50c</div></div>
-    <div class="build-item" onclick="buildItem('glassbuilding')"><div class="bi-icon">🏙️</div><span class="bi-name">GLASS</span><div class="bi-cost">80c</div></div>
-    <div class="build-item" onclick="buildItem('paddy')"><div class="bi-icon">🌾</div><span class="bi-name">PADDY</span><div class="bi-cost">40c</div></div>
-    <div class="build-item" onclick="buildItem('school')"><div class="bi-icon">🏫</div><span class="bi-name">SCHOOL</span><div class="bi-cost">200c</div></div>
-    <div class="build-item" onclick="buildItem('gym')"><div class="bi-icon">🏋️</div><span class="bi-name">GYM</span><div class="bi-cost">150c</div></div>
+    <div class="build-item" onclick="buildItem('house')"><div class="bi-icon">🏠</div><span class="bi-name">HOUSE<br>一軒家</span><div class="bi-cost">💰80c</div></div>
+    <div class="build-item" onclick="buildItem('building')"><div class="bi-icon">🏢</div><span class="bi-name">BUILDING<br>ビル</span><div class="bi-cost">💰50c</div></div>
+    <div class="build-item" onclick="buildItem('glassbuilding')"><div class="bi-icon">🏙️</div><span class="bi-name">GLASS<br>ガラス棟</span><div class="bi-cost">💰80c</div></div>
+    <div class="build-item" onclick="buildItem('paddy')"><div class="bi-icon">🌾</div><span class="bi-name">PADDY<br>田んぼ</span><div class="bi-cost">💰40c</div></div>
+    <div class="build-item" onclick="buildItem('school')"><div class="bi-icon">🏫</div><span class="bi-name">SCHOOL<br>学校</span><div class="bi-cost">💰200c</div></div>
+    <div class="build-item" onclick="buildItem('gym')"><div class="bi-icon">🏋️</div><span class="bi-name">GYM<br>体育館</span><div class="bi-cost">💰150c</div></div>
   </div>
   <div class="build-section">SPORTS</div>
   <div class="build-grid">
-    <div class="build-item" onclick="buildItem('schoolyard')"><div class="bi-icon">⬜</div><span class="bi-name">SCHOOLYARD</span><div class="bi-cost">100c</div></div>
-    <div class="build-item" onclick="buildItem('tennis')"><div class="bi-icon">🎾</div><span class="bi-name">TENNIS</span><div class="bi-cost">120c</div></div>
-    <div class="build-item" onclick="buildItem('soccer')"><div class="bi-icon">⚽</div><span class="bi-name">SOCCER</span><div class="bi-cost">200c</div></div>
+    <div class="build-item" onclick="buildItem('schoolyard')"><div class="bi-icon">⬜</div><span class="bi-name">YARD<br>校庭</span><div class="bi-cost">💰100c</div></div>
+    <div class="build-item" onclick="buildItem('tennis')"><div class="bi-icon">🎾</div><span class="bi-name">TENNIS<br>テニス</span><div class="bi-cost">💰120c</div></div>
+    <div class="build-item" onclick="buildItem('soccer')"><div class="bi-icon">⚽</div><span class="bi-name">SOCCER<br>サッカー</span><div class="bi-cost">💰200c</div></div>
   </div>
   <div id="build-close" onclick="toggleBuildMenu()">✕ CLOSE</div>
 </div>
@@ -549,25 +549,25 @@ function placePos(){
 }
 
 function buildItem(type){
-  if(!isMember){ showNotif('👁️ 探検モードです。建設は会員のみ！'); return; }
+  if(!isMember){ showNotif('👁️ Explorer mode / 探検モード — 建設は会員のみ'); return; }
   try{
     var cost=BUILD_COSTS[type]||0;
-    if(playerCoins<cost){ showNotif('コインが足りません ('+cost+'c必要)'); return; }
+    if(playerCoins<cost){ showNotif('💰 Not enough coins / コイン不足 ('+cost+'c必要)'); return; }
     playerCoins-=cost;
     updateCoinDisplay();
     toggleBuildMenu();
     var pos=placePos();
     var x=pos.x, z=pos.z;
 
-    if(type==='grass'){ var b0=scene.children.length; buildGrass(x,z); placedObjects.push({meshes:scene.children.slice(b0),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('草むらを配置！'); }
-    else if(type==='tree'){ var b1=scene.children.length; buildTree(x,z); placedObjects.push({meshes:scene.children.slice(b1),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('木を植えました！'); }
-    else if(type==='river'){ var b2=scene.children.length; buildRiver(x,z); placedObjects.push({meshes:scene.children.slice(b2),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('川を配置！'); }
-    else if(type==='lake'){ var b3=scene.children.length; buildLake(x,z); placedObjects.push({meshes:scene.children.slice(b3),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('湖を作成！'); }
-    else if(type==='fountain'){ var b4=scene.children.length; buildFountain(x,z); placedObjects.push({meshes:scene.children.slice(b4),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('噴水を設置！'); }
-    else if(type==='gym'){ var b5=scene.children.length; buildGym(x,z); placedObjects.push({meshes:scene.children.slice(b5),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('体育館！'); }
-    else if(type==='schoolyard'){ var b6=scene.children.length; buildSchoolyard(x,z); placedObjects.push({meshes:scene.children.slice(b6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('校庭！'); }
-    else if(type==='tennis'){ var b7=scene.children.length; buildTennisCourt(x,z); placedObjects.push({meshes:scene.children.slice(b7),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('テニスコート！'); }
-    else if(type==='soccer'){ var b8=scene.children.length; buildSoccerField(x,z); placedObjects.push({meshes:scene.children.slice(b8),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('サッカー場！'); }
+    if(type==='grass'){ var b0=scene.children.length; buildGrass(x,z); placedObjects.push({meshes:scene.children.slice(b0),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🌿 Grass / 草むら'); }
+    else if(type==='tree'){ var b1=scene.children.length; buildTree(x,z); placedObjects.push({meshes:scene.children.slice(b1),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🌳 Tree / 木を植えました'); }
+    else if(type==='river'){ var b2=scene.children.length; buildRiver(x,z); placedObjects.push({meshes:scene.children.slice(b2),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🌊 River / 川を配置'); }
+    else if(type==='lake'){ var b3=scene.children.length; buildLake(x,z); placedObjects.push({meshes:scene.children.slice(b3),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('💧 Lake / 湖を作成'); }
+    else if(type==='fountain'){ var b4=scene.children.length; buildFountain(x,z); placedObjects.push({meshes:scene.children.slice(b4),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('⛲ Fountain / 噴水を設置'); }
+    else if(type==='gym'){ var b5=scene.children.length; buildGym(x,z); placedObjects.push({meshes:scene.children.slice(b5),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🏋️ Gym / 体育館'); }
+    else if(type==='schoolyard'){ var b6=scene.children.length; buildSchoolyard(x,z); placedObjects.push({meshes:scene.children.slice(b6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('⬜ Schoolyard / 校庭'); }
+    else if(type==='tennis'){ var b7=scene.children.length; buildTennisCourt(x,z); placedObjects.push({meshes:scene.children.slice(b7),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🎾 Tennis Court / テニスコート'); }
+    else if(type==='soccer'){ var b8=scene.children.length; buildSoccerField(x,z); placedObjects.push({meshes:scene.children.slice(b8),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('⚽ Soccer Field / サッカー場'); }
     else if(type==='road'){
       var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92}));
       rm.rotation.x=-Math.PI/2; rm.position.set(x,0.12,z); rm.receiveShadow=true; scene.add(rm);
@@ -577,10 +577,10 @@ function buildItem(type){
       lm2.rotation.x=-Math.PI/2; lm2.position.set(x,0.13,z); scene.add(lm2);
       var rk=x+'_'+z; roadTiles.add(rk);
       placedObjects.push({meshes:[rm,lm2],type:'road',cost:cost,x:x,z:z,roadKey:rk,player:currentPlayer||"guest"});
-      showNotif('道路を敷設！');
+      showNotif('🛣️ Road / 道路を敷設');
     }
-    else if(type==='roadcurveR'){ buildRoadCurve(x,z,'right',pos.dir); showNotif('右カーブ！'); }
-    else if(type==='roadcurveL'){ buildRoadCurve(x,z,'left',pos.dir); showNotif('左カーブ！'); }
+    else if(type==='roadcurveR'){ buildRoadCurve(x,z,'right',pos.dir); showNotif('↪️ Curve R / 右カーブ'); }
+    else if(type==='roadcurveL'){ buildRoadCurve(x,z,'left',pos.dir); showNotif('↩️ Curve L / 左カーブ'); }
     else if(type==='slope'){
       var slk=growKey(x,z,'slope');
       if(!growRegistry[slk]) growRegistry[slk]={level:1,meshes:[]};
@@ -590,12 +590,12 @@ function buildItem(type){
       placedObjects.push({meshes:growRegistry[slk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:slk,player:currentPlayer||"guest"});
       showNotif('坂道 Lv'+growRegistry[slk].level+'！');
     }
-    else if(type==='streetlight'){ buildStreetlight(x,z,1); showNotif('街灯！'); }
-    else if(type==='streetlightR'){ buildStreetlight(x,z,1); showNotif('街灯（右向き）！'); }
-    else if(type==='streetlightL'){ buildStreetlight(x,z,-1); showNotif('街灯（左向き）！'); }
-    else if(type==='car'){ spawnCar(x,z); showNotif('車を配置！'); }
-    else if(type==='bike'){ spawnBike(x,z); showNotif('バイクを配置！'); }
-    else if(type==='person'){ spawnPerson(x,z); showNotif('人を配置！'); }
+    else if(type==='streetlight'){ buildStreetlight(x,z,1); showNotif('💡 Street Light / 街灯'); }
+    else if(type==='streetlightR'){ buildStreetlight(x,z,1); showNotif('💡 Street Light R / 街灯右'); }
+    else if(type==='streetlightL'){ buildStreetlight(x,z,-1); showNotif('💡 Street Light L / 街灯左'); }
+    else if(type==='car'){ spawnCar(x,z); showNotif('🚗 Car / 車を配置'); }
+    else if(type==='bike'){ spawnBike(x,z); showNotif('🏍️ Bike / バイクを配置'); }
+    else if(type==='person'){ spawnPerson(x,z); showNotif('🚶 Person / 人を配置'); }
     else if(type==='bridge'){
       var brk=growKey(x,z,'bridge');
       if(!growRegistry[brk]) growRegistry[brk]={level:1,meshes:[]};
@@ -606,7 +606,7 @@ function buildItem(type){
       var bNames=['シンプル桁橋','斜張橋','レインボーブリッジ'];
       showNotif('橋 Lv'+growRegistry[brk].level+' '+bNames[growRegistry[brk].level-1]+'！');
     }
-    else if(type==='footbridge'){ var fm=buildFootbridge(x,z); placedObjects.push({meshes:fm,type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('歩道橋！'); }
+    else if(type==='footbridge'){ var fm=buildFootbridge(x,z); placedObjects.push({meshes:fm,type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🚶 Walkway / 歩道橋'); }
     else if(type==='mountain'){
       var mk=growKey(x,z,'mountain');
       if(!growRegistry[mk]) growRegistry[mk]={level:1,meshes:[]};
@@ -649,35 +649,35 @@ function buildItem(type){
     else if(type==='cherry'){
       buildCherryTree(x,z);
       placedObjects.push({meshes:scene.children.slice(scene.children.length-16),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
-      showNotif('桜！');
+      showNotif('🌸 Cherry / 桜');
     }
     else if(type==='broadleaf'){
       buildBroadleafTree(x,z);
       placedObjects.push({meshes:scene.children.slice(scene.children.length-12),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
-      showNotif('広葉樹！');
+      showNotif('🌳 Broadleaf / 広葉樹');
     }
     else if(type==='conifer'){
       buildConiferTree(x,z);
       placedObjects.push({meshes:scene.children.slice(scene.children.length-6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
-      showNotif('針葉樹！');
+      showNotif('🌲 Conifer / 針葉樹');
     }
     else if(type==='sidewalk'){
       var swStart=scene.children.length;
       buildSidewalk(x,z);
       var swk=x+'_'+z;
       placedObjects.push({meshes:scene.children.slice(swStart),type:type,cost:cost,x:x,z:z,roadKey:swk,player:currentPlayer||"guest"});
-      showNotif('歩道を設置！');
+      showNotif('🚶 Sidewalk / 歩道を設置');
     }
     else if(type==='intersection'){
       buildIntersection(x,z);
       var rk=x+'_'+z; roadTiles.add(rk);
       placedObjects.push({meshes:scene.children.slice(scene.children.length-37),type:type,cost:cost,x:x,z:z,roadKey:rk,player:currentPlayer||"guest"});
-      showNotif('交差点！');
+      showNotif('✛ Intersection / 交差点');
     }
     else if(type==='paddy'){
       var paddyMeshes=addRicePaddy(x,z);
       placedObjects.push({meshes:paddyMeshes,type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
-      showNotif('田んぼ！');
+      showNotif('🌾 Rice Paddy / 田んぼ');
     }
     else{ showNotif('未対応: '+type); }
   }catch(err){
@@ -741,16 +741,16 @@ function doRemoveObject(obj){
   }
   playerCoins+=obj.cost;
   updateCoinDisplay();
-  showNotif('回収！ +'+obj.cost+'c返還');
+  showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
 }
 
 function recoverLast(){
-  if(!isMember){ showNotif('👁️ 探検モードです。回収は会員のみ！'); return; }
+  if(!isMember){ showNotif('👁️ Explorer mode / 探検モード — 回収は会員のみ'); return; }
   var btn=document.getElementById('recovery-btn');
   btn.classList.remove('active');
   btn.textContent='UNDO';
   recoveryMode=false;
-  if(placedObjects.length===0){ showNotif('回収できるものがありません'); return; }
+  if(placedObjects.length===0){ showNotif('❌ Nothing to remove / 回収できるものがありません'); return; }
 
   // 十字カーソルが向いている位置（placePos）に最も近いオブジェクトを回収
   // 自分が建てたものだけ回収可能（currentPlayerが設定されている場合）
@@ -766,7 +766,7 @@ function recoverLast(){
     var dist=dx*dx+dz*dz;
     if(dist<bestDist){ bestDist=dist; bestIdx=i; }
   }
-  if(bestIdx<0){ showNotif('回収できるものがありません\n（自分が建てたものだけ回収できます）'); return; }
+  if(bestIdx<0){ showNotif('❌ Own builds only / 自分のビルドのみ回収可能'); return; }
 
   var obj=placedObjects.splice(bestIdx,1)[0];
   doRemoveObject(obj);
@@ -2539,14 +2539,14 @@ function saveCity(){
     try{ localStorage.setItem(_saveKey,JSON.stringify(localData)); }catch(e1){}
 
     // FirebaseにREST APIで保存（CORSなし！）
-    showNotif('💾 共有保存中...');
+    showNotif('💾 Saving... / 保存中...');
     fetch(FIREBASE_URL + '/city_ignis.json', {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(localData)
     }).then(function(r){ return r.json(); }).then(function(){
-      showNotif('💾 共有保存完了！('+myBuilds.length+'棟)');
-    }).catch(function(e){ showNotif('⚠️ 共有保存失敗'); console.warn(e); });
+      showNotif('💾 Saved! / 保存完了 ('+myBuilds.length+' buildings)');
+    }).catch(function(e){ showNotif('⚠️ Save failed / 保存失敗'); console.warn(e); });
   }catch(e){ showNotif('⚠️ セーブ失敗'); console.warn('save:',e); }
 }
 
@@ -2654,7 +2654,7 @@ function _applyLoadedData(data, onDone){
         count++;
       }catch(e){ console.warn('rebuildItem error:', e); }
     });
-    showNotif('📂 ロード完了！ '+count+'棟復元');
+    showNotif('📂 Loaded! / ロード完了 '+count+' buildings');
     if(onDone) onDone(true);
   }catch(e){
     console.warn('_applyLoadedData:',e);
@@ -3138,7 +3138,7 @@ function initGame(){
   // GitHubから共有データをロード
   setTimeout(function(){
     loadCity(function(ok){
-      if(!ok) showNotif('🗺️ 新しい街を作ろう！');
+      if(!ok) showNotif('🗺️ Build your city! / 新しい街を作ろう！');
     });
   }, 400);
   // 手動セーブボタン追加

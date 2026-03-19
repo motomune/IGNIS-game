@@ -556,6 +556,7 @@ function buildItem(type){
     playerCoins-=cost;
     updateCoinDisplay();
     toggleBuildMenu();
+    setTimeout(function(){ quickSave(); }, 100);
     var pos=placePos();
     var x=pos.x, z=pos.z;
 
@@ -742,6 +743,7 @@ function doRemoveObject(obj){
   playerCoins+=obj.cost;
   updateCoinDisplay();
   showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
+  setTimeout(function(){ quickSave(); }, 100);
 }
 
 function recoverLast(){
@@ -2524,6 +2526,27 @@ function spawnPerson(startX,startZ){
 // IndexedDB セーブ
 // ===== セーブ: 複数手段でフォールバック =====
 var _saveKey='ignis_v4';
+// リアルタイム同期用: 建設直後に即座保存
+function quickSave(){
+  if(typeof scene==='undefined') return;
+  try{
+    var myBuilds=[];
+    placedObjects.forEach(function(o){
+      if(o.type==='car'||o.type==='bike'||o.type==='person') return;
+      myBuilds.push({t:o.type,x:o.x,z:o.z,p:currentPlayer||'guest'});
+    });
+    var myGr={};
+    Object.keys(growRegistry).forEach(function(k){ myGr[k]=growRegistry[k].level; });
+    var data={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
+    try{ localStorage.setItem(_saveKey,JSON.stringify(data)); }catch(e1){}
+    fetch(FIREBASE_URL + '/city_ignis.json', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    }).catch(function(){});
+  }catch(e){}
+}
+
 function saveCity(){
   if(typeof scene==='undefined'||typeof playerCoins==='undefined') return;
   try{
@@ -2619,6 +2642,49 @@ function _loadFromLocal(onDone){
     console.warn('loadCity local:',e);
     if(onDone) onDone(false);
   }
+}
+
+// リアルタイム同期: Firebaseのデータを差分反映
+function _syncFromFirebase(data){
+  try{
+    if(!data || !data.builds) return;
+    // 現在の建物をすべて削除（car/bike/person以外）
+    for(var i=placedObjects.length-1;i>=0;i--){
+      var o=placedObjects[i];
+      if(o.type==='car'||o.type==='bike'||o.type==='person') continue;
+      o.meshes.forEach(function(m){ scene.remove(m); });
+    }
+    placedObjects = placedObjects.filter(function(o){
+      return o.type==='car'||o.type==='bike'||o.type==='person';
+    });
+    growRegistry={};
+    roadTiles.clear();
+    curveTiles.clear();
+    windowMeshes=[];
+
+    // growRegistryを復元
+    var gr=data.gr||{};
+    Object.keys(gr).forEach(function(k){
+      if(!growRegistry[k]) growRegistry[k]={level:0,meshes:[],maxLevel:5};
+      growRegistry[k].level=gr[k];
+    });
+
+    // 建物を再構築
+    var builds=data.builds||[];
+    builds.forEach(function(b){
+      try{
+        var beforePlaced=placedObjects.length;
+        rebuildItem(b.t||b.type, b.x, b.z, b.p||b.player||'guest');
+        if(placedObjects.length===beforePlaced){
+          var newMeshes=scene.children.slice(scene.children.length-1);
+          placedObjects.push({meshes:newMeshes,type:b.t||b.type,cost:0,x:b.x,z:b.z,player:b.p||b.player||'guest'});
+        } else {
+          placedObjects[placedObjects.length-1].player=b.p||b.player||'guest';
+        }
+      }catch(e){}
+    });
+    showNotif('🔄 Updated! / 街が更新されました');
+  }catch(e){ console.warn('sync error:', e); }
 }
 
 function _applyLoadedData(data, onDone){
@@ -3151,6 +3217,24 @@ function initGame(){
   })();
   // 自動セーブ（5分ごと）・離脱時セーブ
   setInterval(function(){ saveCity(); }, 300000);
+
+  // リアルタイム同期: 10秒ごとに他の人の変更を検知
+  var _lastBuildCount = 0;
+  var _lastBuildHash = '';
+  setInterval(function(){
+    fetch(FIREBASE_URL + '/city_ignis.json?t=' + Date.now())
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(!data || !data.builds) return;
+        // ハッシュで変化を検知（自分の操作直後は無視）
+        var newHash = data.builds.length + '_' + (data.builds[data.builds.length-1] ? JSON.stringify(data.builds[data.builds.length-1]) : '');
+        if(newHash !== _lastBuildHash && _lastBuildHash !== ''){
+          // 他の人が建設・回収した！差分を反映
+          _syncFromFirebase(data);
+        }
+        _lastBuildHash = newHash;
+      }).catch(function(){});
+  }, 10000);
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
   // Firebase会員チェック

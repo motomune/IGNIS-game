@@ -2735,10 +2735,9 @@ function initGame(){
   renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled=false;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.2;
+  renderer.toneMappingExposure=1.8;
 
   window.addEventListener('resize',function(){
     var w=window.innerWidth, h=window.innerHeight;
@@ -2762,20 +2761,8 @@ function initGame(){
   scene.fog=new THREE.FogExp2(0xc8e0f0,0.002);
   camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,2000);
   camera.position.set(0,100,160);
-  ambientLight=new THREE.AmbientLight(0x304060,0.8);scene.add(ambientLight);
-  var hemiLight=new THREE.HemisphereLight(0x88aacc,0x3a5520,0.6);hemiLight.position.set(0,500,0);scene.add(hemiLight);
-  sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(200,400,200);
-  sun.castShadow=true;
-  sun.shadow.mapSize.width=2048;
-  sun.shadow.mapSize.height=2048;
-  sun.shadow.camera.near=10;
-  sun.shadow.camera.far=2000;
-  sun.shadow.camera.left=-500;
-  sun.shadow.camera.right=500;
-  sun.shadow.camera.top=500;
-  sun.shadow.camera.bottom=-500;
-  sun.shadow.bias=-0.001;
-  scene.add(sun);
+  ambientLight=new THREE.AmbientLight(0x1a0800,0.6);scene.add(ambientLight);
+  sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(200,400,200);scene.add(sun);
   towerLight=new THREE.PointLight(0xff4400,0,500);towerLight.position.set(0,200,0);scene.add(towerLight); // 根本ライトをオフ
   [[0,5,0,0xff4400,2,300],[80,10,80,0xff2200,1.5,200],[-60,8,-60,0xffaa00,1.5,200]].forEach(function(_a){
     var l=new THREE.PointLight(_a[3],_a[4],_a[5]);l.position.set(_a[0],_a[1],_a[2]);scene.add(l);

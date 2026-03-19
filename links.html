@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IGNIS — LINKS</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: #000 !important; }
+body {
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  padding: 40px 20px;
+  position: relative;
+}
+#particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.bg-glow {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(255,60,0,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(180,30,0,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,80,0,0.08) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+  animation: bgBreath 6s ease-in-out infinite alternate;
+}
+@keyframes bgBreath { from { opacity: 0.6; } to { opacity: 1; } }
+.scanlines { display: none; }
+.content { position: relative; z-index: 10; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+.logo-wrap { text-align: center; margin-bottom: 28px; animation: fadeDown 0.8s ease both; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes logoFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.logo-main {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(42px,12vw,72px);
+  font-weight: 900;
+  letter-spacing: clamp(8px,3vw,20px);
+  background: linear-gradient(180deg, #ffee00 0%, #ffaa00 30%, #ff6600 60%, #ff2200 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(255,100,0,1.0)) drop-shadow(0 0 20px rgba(255,60,0,0.8)) drop-shadow(0 0 40px rgba(255,30,0,0.5));
+  animation: flameLogo 0.1s ease-in-out infinite alternate, flameGlow 2s ease-in-out infinite;
+  margin-top: 8px;
+  position: relative;
+}
+@keyframes flameLogo {
+  0% { transform: skewX(-0.3deg) scaleY(1.0); filter: drop-shadow(0 0 8px rgba(255,120,0,1.0)) drop-shadow(0 0 20px rgba(255,60,0,0.8)); }
+  25% { transform: skewX(0.5deg) scaleY(1.008); filter: drop-shadow(0 0 12px rgba(255,150,0,1.0)) drop-shadow(0 0 25px rgba(255,80,0,0.9)); }
+  50% { transform: skewX(-0.4deg) scaleY(0.995); filter: drop-shadow(0 0 6px rgba(255,100,0,1.0)) drop-shadow(0 0 18px rgba(255,50,0,0.7)); }
+  75% { transform: skewX(0.3deg) scaleY(1.005); filter: drop-shadow(0 0 14px rgba(255,160,0,1.0)) drop-shadow(0 0 28px rgba(255,90,0,0.9)); }
+  100% { transform: skewX(-0.2deg) scaleY(1.002); filter: drop-shadow(0 0 10px rgba(255,130,0,1.0)) drop-shadow(0 0 22px rgba(255,70,0,0.8)); }
+}
+@keyframes flameGlow {
+  0%,100% { letter-spacing: clamp(8px,3vw,20px); }
+  50% { letter-spacing: clamp(9px,3.2vw,22px); }
+}
+@keyframes logoShimmer { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+.logo-sub { font-family: 'Rajdhani', sans-serif; font-size: clamp(11px,3vw,14px); font-weight:700; letter-spacing: clamp(5px,2vw,12px); color: rgba(255,180,80,1.0); text-transform: uppercase; margin-top: 8px; text-shadow: 0 0 15px rgba(255,120,0,0.9); }
+.divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,80,0,0.5), transparent); margin-bottom: 36px; animation: fadeDown 0.8s 0.2s ease both; opacity: 0; }
+.links { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+.link-card {
+  position: relative; display: flex; align-items: center; gap: 16px; padding: 22px 20px;
+  background: rgba(255,40,0,0.06); border: 1px solid rgba(255,80,0,0.6); border-radius: 12px;
+  text-decoration: none; color: #fff; cursor: pointer; overflow: hidden; transition: all 0.3s ease;
+  opacity: 0; animation: fadeUp 0.6s ease both;
+}
+.link-card:nth-child(1) { animation-delay: 0.3s; }
+.link-card:nth-child(2) { animation-delay: 0.45s; }
+.link-card:nth-child(3) { animation-delay: 0.6s; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.link-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,80,0,0.08), transparent); opacity: 0; transition: opacity 0.3s; }
+.link-card:hover::before, .link-card:active::before { opacity: 1; }
+.link-card:hover, .link-card:active { border-color: rgba(255,100,30,0.6); box-shadow: 0 0 24px rgba(255,80,0,0.2), inset 0 1px 0 rgba(255,150,60,0.15); transform: translateY(-2px); }
+.link-card::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transition: left 0.5s ease; }
+.link-card:hover::after { left: 150%; }
+.card-icon { font-size: 26px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(255,100,30,0.5)); }
+.card-text { flex: 1; }
+.card-title { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #fff; margin-bottom: 4px; text-shadow: 0 0 12px rgba(255,150,60,0.5); }
+.card-desc { font-size: 11px; letter-spacing: 2px; color: rgba(255,170,80,0.95); text-transform: uppercase; text-shadow: 0 0 8px rgba(255,100,0,0.5); }
+.card-arrow { font-size: 14px; color: rgba(255,100,30,0.5); flex-shrink: 0; transition: transform 0.3s, color 0.3s; }
+.link-card:hover .card-arrow { transform: translateX(4px); color: rgba(255,150,60,0.9); }
+.coin-badge {
+  position: absolute; top: -1px; right: 12px;
+  background: linear-gradient(135deg, #ff8800, #ffcc00); color: #000;
+  font-family: 'Rajdhani', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 0 0 6px 6px; text-transform: uppercase;
+  animation: coinBadgePulse 2s ease-in-out infinite;
+}
+@keyframes coinBadgePulse {
+  0%,100% { box-shadow: 0 0 8px rgba(255,180,0,0.4); }
+  50% { box-shadow: 0 0 16px rgba(255,200,0,0.8); filter: brightness(1.2); }
+}
+.link-card.rules-card {
+  border-color: rgba(255,80,0,0.8); background: rgba(255,40,0,0.12);
+  animation: fadeUp 0.6s 0.6s ease both, rulesPulse 2s 1.5s ease-in-out infinite;
+}
+@keyframes rulesPulse {
+  0%,100% { box-shadow: 0 0 20px rgba(255,60,0,0.3), inset 0 0 20px rgba(255,60,0,0.08); border-color: rgba(255,80,0,0.6); }
+  50% { box-shadow: 0 0 50px rgba(255,80,0,0.8), inset 0 0 35px rgba(255,60,0,0.2); border-color: rgba(255,150,0,1.0); filter: brightness(1.1); }
+}
+.rules-badge {
+  position: absolute; top: -1px; right: 12px;
+  background: linear-gradient(135deg, #ff3300, #ff6600); color: #fff;
+  font-family: 'Rajdhani', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 2px;
+  padding: 3px 8px; border-radius: 0 0 6px 6px; text-transform: uppercase;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse { 0%,100% { opacity: 0.8; } 50% { opacity: 1; filter: brightness(1.3); } }
+.flame-icon { display: inline-block; animation: flameWiggle 1s ease-in-out infinite alternate; }
+@keyframes flameWiggle { from { transform: rotate(-3deg) scale(1); } to { transform: rotate(3deg) scale(1.1); } }
+.footer { margin-top: 36px; text-align: center; opacity: 0; animation: fadeUp 0.6s 0.9s ease both; }
+.footer-logo { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 8px; background: linear-gradient(135deg, #ff8c30, #ff4010); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; opacity: 0.5; }
+.footer-copy { font-size: 10px; letter-spacing: 2px; color: rgba(255,100,30,0.3); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="bg-glow"></div>
+<div class="scanlines"></div>
+
+<div class="content">
+  <div class="logo-wrap">
+    <div class="logo-main">IGNIS</div>
+    <div class="logo-sub">Community Links</div>
+  </div>
+  <div class="divider"></div>
+  <div class="links">
+    <a class="link-card" href="https://motomune.github.io/IGNIS-game/" target="_self">
+      <div class="card-icon">🎮</div>
+      <div class="card-text">
+        <div class="card-title">IGNIS WORLD</div>
+        <div class="card-desc">みんなで作る街 / City Builder</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="link-card" href="https://x.com/i/communities/2027248936709410899" target="_blank">
+      <div class="coin-badge">💰 コインを稼ごう / EARN COINS</div>
+      <div class="card-icon">𝕏</div>
+      <div class="card-text">
+        <div class="card-title">IGNIS COMMUNITY</div>
+        <div class="card-desc">参加してコインを稼ごう / Earn Coins</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="link-card rules-card" href="https://motomune.github.io/IGNIS-game/rules.html" target="_self">
+      <div class="rules-badge">⚠️ 必ず読もう / MUST READ</div>
+      <div class="card-icon"><span class="flame-icon">🔥</span></div>
+      <div class="card-text">
+        <div class="card-title">IGNIS RULES</div>
+        <div class="card-desc">コミュニティルール / Rules</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+  <div class="footer">
+    <div class="footer-logo">IGNIS</div>
+    <div class="footer-copy">© 2026 IGNIS. All rights reserved.</div>
+  </div>
+</div>
+
+<script>
+var canvas = document.getElementById('particles');
+var ctx = canvas.getContext('2d');
+var particles = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+resize();
+window.addEventListener('resize', resize);
+function Particle() { this.reset(true); }
+Particle.prototype.reset = function(init) {
+  this.x = Math.random() * canvas.width;
+  this.y = init ? Math.random() * canvas.height : canvas.height + 10;
+  this.vx = (Math.random() - 0.5) * 1.2;
+  this.vy = -(Math.random() * 4.5 + 2.0);
+  this.size = Math.random() * 3 + 1;
+  this.life = init ? Math.random() : 1.0;
+  this.decay = Math.random() * 0.006 + 0.003;
+  var colors = ['rgba(255,80,0,','rgba(255,140,0,','rgba(255,200,0,','rgba(255,50,0,','rgba(200,30,0,'];
+  this.color = colors[Math.floor(Math.random() * colors.length)];
+};
+for (var i = 0; i < 80; i++) particles.push(new Particle());
+function animate() {
+  requestAnimationFrame(animate);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(function(p) {
+    p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+    p.vx += (Math.random() - 0.5) * 0.08;
+    if (p.life <= 0 || p.y < -10) p.reset(false);
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + (p.life * 0.8) + ')'; ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + (p.life * 0.15) + ')'; ctx.fill();
+  });
+}
+animate();
+</script>
+
+</body>
+</html>

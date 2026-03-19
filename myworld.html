@@ -379,12 +379,12 @@ var btnUp=false,btnDown=false;
 var altEl,spdEl;
 
 var buildingPalettes=[
-  {base:0x4a5568,glass:0x2d4a6e,trim:0x718096},
-  {base:0x5a4a3a,glass:0x3d5a6e,trim:0x8a7a6a},
-  {base:0x3d4a5a,glass:0x1a3a5a,trim:0x607080},
-  {base:0x6a6a5a,glass:0x2a4a3a,trim:0x8a8a7a},
-  {base:0x5a3a3a,glass:0x3a2a4a,trim:0x7a5a5a},
-  {base:0x4a4a6a,glass:0x2a3a6a,trim:0x6a6a8a},
+  {base:0x8a9bb0,glass:0x4a7fa8,trim:0xb0bec5},
+  {base:0xc4a882,glass:0x5a8090,trim:0xd4b896},
+  {base:0x7a8fa0,glass:0x2a5a7a,trim:0x90a8b8},
+  {base:0xb0a898,glass:0x3a6a5a,trim:0xc8beb4},
+  {base:0x9a8878,glass:0x4a3a5a,trim:0xb0a090},
+  {base:0x7a8898,glass:0x3a4a7a,trim:0x9aaab8},
 ];
 
 var BUILD_COSTS={bridge:120,footbridge:60,roadcurveR:20,roadcurveL:20,slope:40,intersection:30,sidewalk:10,streetlightR:15,streetlightL:15,streetlight:15,grass:5,tree:10,broadleaf:12,conifer:12,cherry:15,mountain:150,river:80,lake:120,fountain:60,road:20,car:30,bike:20,person:5,house:80,building:50,glassbuilding:80,school:200,gym:150,schoolyard:100,tennis:120,soccer:200,paddy:40};
@@ -2684,9 +2684,10 @@ function initGame(){
   renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.shadowMap.enabled=false;
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.8;
+  renderer.toneMappingExposure=1.2;
 
   window.addEventListener('resize',function(){
     var w=window.innerWidth, h=window.innerHeight;
@@ -2710,8 +2711,20 @@ function initGame(){
   scene.fog=new THREE.FogExp2(0xc8e0f0,0.002);
   camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,2000);
   camera.position.set(0,100,160);
-  ambientLight=new THREE.AmbientLight(0x1a0800,0.6);scene.add(ambientLight);
-  sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(200,400,200);scene.add(sun);
+  ambientLight=new THREE.AmbientLight(0x304060,0.8);scene.add(ambientLight);
+  var hemiLight=new THREE.HemisphereLight(0x88aacc,0x3a5520,0.6);hemiLight.position.set(0,500,0);scene.add(hemiLight);
+  sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(200,400,200);
+  sun.castShadow=true;
+  sun.shadow.mapSize.width=2048;
+  sun.shadow.mapSize.height=2048;
+  sun.shadow.camera.near=10;
+  sun.shadow.camera.far=2000;
+  sun.shadow.camera.left=-500;
+  sun.shadow.camera.right=500;
+  sun.shadow.camera.top=500;
+  sun.shadow.camera.bottom=-500;
+  sun.shadow.bias=-0.001;
+  scene.add(sun);
   towerLight=new THREE.PointLight(0xff4400,0,500);towerLight.position.set(0,200,0);scene.add(towerLight); // 根本ライトをオフ
   [[0,5,0,0xff4400,2,300],[80,10,80,0xff2200,1.5,200],[-60,8,-60,0xffaa00,1.5,200]].forEach(function(_a){
     var l=new THREE.PointLight(_a[3],_a[4],_a[5]);l.position.set(_a[0],_a[1],_a[2]);scene.add(l);
@@ -2720,7 +2733,7 @@ function initGame(){
   // 円形の大地
   var gnd=new THREE.Mesh(
     new THREE.CircleGeometry(4000,128),
-    new THREE.MeshStandardMaterial({color:0x3a8020,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
+    new THREE.MeshStandardMaterial({color:0x2d6b1a,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
   );
   gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
   // 円形グリッド：GridHelperの代わりに円形テクスチャ状のグリッドプレーンを使う

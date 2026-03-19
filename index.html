@@ -364,12 +364,12 @@ var btnUp=false,btnDown=false;
 var altEl,spdEl;
 
 var buildingPalettes=[
-  {base:0x4a5568,glass:0x2d4a6e,trim:0x718096},
-  {base:0x5a4a3a,glass:0x3d5a6e,trim:0x8a7a6a},
-  {base:0x3d4a5a,glass:0x1a3a5a,trim:0x607080},
-  {base:0x6a6a5a,glass:0x2a4a3a,trim:0x8a8a7a},
-  {base:0x5a3a3a,glass:0x3a2a4a,trim:0x7a5a5a},
-  {base:0x4a4a6a,glass:0x2a3a6a,trim:0x6a6a8a},
+  {base:0x9aa0a8,glass:0x5588aa,trim:0xc0c8d0},
+  {base:0xc8b89a,glass:0x4a7890,trim:0xddd0b8},
+  {base:0x8898aa,glass:0x336688,trim:0xaabbc8},
+  {base:0xb8b0a0,glass:0x3a7060,trim:0xd0c8b8},
+  {base:0xa09080,glass:0x554466,trim:0xc0b0a0},
+  {base:0x889098,glass:0x334477,trim:0xa8b8c0},
 ];
 
 var BUILD_COSTS={bridge:120,footbridge:60,roadcurveR:20,roadcurveL:20,slope:40,intersection:30,sidewalk:10,streetlightR:15,streetlightL:15,streetlight:15,grass:5,tree:10,broadleaf:12,conifer:12,cherry:15,mountain:150,river:80,lake:120,fountain:60,road:20,car:30,bike:20,person:5,house:80,building:50,glassbuilding:80,school:200,gym:150,schoolyard:100,tennis:120,soccer:200,paddy:40};
@@ -660,7 +660,7 @@ function buildItem(type){
     }
     else if(type==='conifer'){
       buildConiferTree(x,z);
-      placedObjects.push({meshes:scene.children.slice(scene.children.length-6),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
+      placedObjects.push({meshes:scene.children.slice(scene.children.length-2),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"});
       showNotif('🌲 Conifer / 針葉樹');
     }
     else if(type==='sidewalk'){
@@ -1536,23 +1536,21 @@ function buildBroadleafTree(x,z){
 }
 
 function buildConiferTree(x,z){
-  // 針葉樹: 円錐形の重なり
-  var trunkH=2+Math.random()*2;
-  var trunkR=0.18+Math.random()*0.1;
-  var trunkMat=new THREE.MeshStandardMaterial({color:0x4a2a0a,roughness:0.95});
-  var trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkR*0.6,trunkR,trunkH,8),trunkMat);
+  // 針葉樹: 幹1本＋大きな1つの三角錐（緑強め）
+  var trunkH=2.5+Math.random()*1.5;
+  var trunkR=0.22+Math.random()*0.1;
+  var trunkMat=new THREE.MeshStandardMaterial({color:0x3a1a06,roughness:0.97});
+  var trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkR*0.5,trunkR,trunkH,8),trunkMat);
   trunk.position.set(x,trunkH/2,z); scene.add(trunk);
-  var treeH=14+Math.random()*6;
-  var treeR=2.5+Math.random()*0.8;
-  var darkGreens=[0x0d4a0d,0x0e5a0e,0x155515,0x0a3d0a,0x1a5a1a];
-  for(var i=0;i<5;i++){
-    var layerR=treeR*(1-i/5*0.7)*(1+Math.random()*0.08);
-    var layerH=treeH*(0.3-i*0.02);
-    var yPos=trunkH+i*(treeH*0.17);
-    var cone=new THREE.Mesh(new THREE.ConeGeometry(layerR,layerH,10),
-      new THREE.MeshStandardMaterial({color:darkGreens[i%5],roughness:0.85}));
-    cone.position.set(x,yPos,z); scene.add(cone);
-  }
+  var treeH=18+Math.random()*8;
+  var treeR=3.5+Math.random()*1.2;
+  var greenColor=0x0a4a0a;
+  var cone=new THREE.Mesh(
+    new THREE.ConeGeometry(treeR,treeH,12),
+    new THREE.MeshStandardMaterial({color:greenColor,roughness:0.88,metalness:0.0})
+  );
+  cone.position.set(x,trunkH+treeH/2,z);
+  scene.add(cone);
 }
 function buildTree(x,z){
   var treeType=Math.floor(Math.random()*3);
@@ -1702,11 +1700,11 @@ function buildLake(x,z){
   }
 }
 
-function buildFountain(x,z){ // 反射なし版
+function buildFountain(x,z){
   var FS=TILE*1.8;
-  var baseMat=new THREE.MeshStandardMaterial({color:0x888888,roughness:0.3,metalness:0.7,envMapIntensity:0.0});
-  var stoneMat=new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:0.6,metalness:0.2,envMapIntensity:0.0});
-  var waterMat=new THREE.MeshStandardMaterial({color:0x66bbff,roughness:0.02,metalness:0.3,transparent:true,opacity:0.82,envMapIntensity:0.0});
+  var baseMat=new THREE.MeshStandardMaterial({color:0x909090,roughness:0.95,metalness:0.0,envMapIntensity:0.0});
+  var stoneMat=new THREE.MeshStandardMaterial({color:0xa8a8a8,roughness:0.93,metalness:0.0,envMapIntensity:0.0});
+  var waterMat=new THREE.MeshStandardMaterial({color:0x2288cc,roughness:0.85,metalness:0.0,transparent:true,opacity:0.80,envMapIntensity:0.0});
   // 広場
   var plaza=new THREE.Mesh(new THREE.CircleGeometry(FS*0.65,32),stoneMat);
   plaza.rotation.x=-Math.PI/2;plaza.position.set(x,0.1,z);scene.add(plaza);
@@ -1726,11 +1724,9 @@ function buildFountain(x,z){ // 反射なし版
   // 中央支柱
   var pillar=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.3,3.5,10),baseMat);
   pillar.position.set(x,3.0,z);scene.add(pillar);
-  // 噴水ライト
-  var fl=new THREE.PointLight(0x44aaff,8,FS*4);fl.position.set(x,2,z);scene.add(fl);
-  var fl2=new THREE.PointLight(0x88ddff,5,FS*6);fl2.position.set(x,8,z);scene.add(fl2);
-  var dropMat=new THREE.MeshBasicMaterial({color:0xaaeeff,transparent:true,opacity:0.0});
-  var dropMat2=new THREE.MeshBasicMaterial({color:0x88ccff,transparent:true,opacity:0.0});
+  // 噴水ライトなし（白く光らないように）
+  var dropMat=new THREE.MeshBasicMaterial({color:0x44aaff,transparent:true,opacity:0.0});
+  var dropMat2=new THREE.MeshBasicMaterial({color:0x2299dd,transparent:true,opacity:0.0});
   // 中央: 高く吹き上がる水柱（16本）
   for(var fi=0;fi<16;fi++){
     var a=fi/16*Math.PI*2;
@@ -2342,7 +2338,7 @@ function buildSchoolyard(x,z){
 function buildSidewalk(x,z){
   var meshes=[];
   // 歩道面のみ（区切りなし・シンプル）
-  var swMat=new THREE.MeshStandardMaterial({color:0xe8d8a8,roughness:0.92,metalness:0.0,envMapIntensity:0.0});
+  var swMat=new THREE.MeshStandardMaterial({color:0xb8b8b0,roughness:0.95,metalness:0.0,envMapIntensity:0.0});
   var sw=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),swMat);
   sw.rotation.x=-Math.PI/2; sw.position.set(x,0.06,z); scene.add(sw); meshes.push(sw);
   return meshes;

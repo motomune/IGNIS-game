@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>IGNIS WORLD</title>
+<title>IGNIS MY WORLD</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -55,7 +55,7 @@
     #mobile-controls{display:block;}
     #kb-controls{display:none;}
     #flight-info{bottom:190px;left:16px;}
-    #minimap{bottom:235px;right:16px;width:65px;height:65px;}
+    #minimap{bottom:150px;right:16px;width:65px;height:65px;}
     #member-card{top:55px;left:10px;padding:3px 8px;min-width:90px;max-width:120px;}
     #build-btn{left:28px;}
     #recovery-btn{left:28px;}
@@ -136,7 +136,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
 <body>
 <div id="loading">
   <div id="loading-logo">IGNIS</div>
-  <div id="loading-sub">WORLD — ENTER THE CITY</div>
+  <div id="loading-sub">MY WORLD — YOUR CITY</div>
   <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
   <div id="loading-text">INITIALIZING...</div>
 </div>
@@ -144,7 +144,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
 <div id="scanlines"></div>
 <div id="vignette"></div>
 <div id="hud">
-  <div id="top-bar"><div id="logo">IGNIS</div><div id="world-label">WORLD — IGNIS CITY</div></div>
+  <div id="top-bar"><div id="logo">IGNIS</div><div id="world-label">MY WORLD</div></div>
   <div id="member-card">
     <div class="rank">RANK 4 — 虹</div>
     <div class="name">MEMBER</div>
@@ -158,7 +158,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
   </div>
 
   <div id="minimap" onclick="toggleMinimap()" style="cursor:pointer;z-index:15;position:absolute;">
-    <div id="minimap-label">IGNIS CITY</div>
+    <div id="minimap-label">MY WORLD</div>
     <canvas id="minimap-canvas" width="80" height="80"></canvas>
     <div style="position:absolute;bottom:4px;right:6px;font-size:7px;font-family:Orbitron,monospace;color:rgba(255,100,0,0.4);">TAP</div>
   </div>
@@ -324,8 +324,23 @@ var recoveryMode = false;
 
 // ── Firebase設定 ──────────────────────────────────────────
 var FIREBASE_URL = 'https://ignis-78c73-default-rtdb.asia-southeast1.firebasedatabase.app';
-var currentPlayer = (new URLSearchParams(location.search)).get('n') || localStorage.getItem('ignis_player') || '';
+var _params = new URLSearchParams(location.search);
+var currentPlayer = _params.get('n') || '';
+var _urlToken = _params.get('t') || '';
 var isMember = false;
+var _worldOwner = currentPlayer; // このワールドのオーナー
+
+// トークン検証（IGNIS WORLDと同じロジック）
+var SECRET = "IGNIS2026";
+function _generateToken(name, id) {
+  var str = name + id + SECRET;
+  var hash = 0;
+  for (var j = 0; j < str.length; j++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(j);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36).slice(0, 8);
+}
 var t = 0;
 var _lastT = performance.now();
 
@@ -439,7 +454,7 @@ function mkB(x,z,w,d,h){
   var glassMat=new THREE.MeshStandardMaterial({color:pal.glass,roughness:0.3,metalness:0.05,transparent:true,opacity:0.55,envMapIntensity:0.0});
   var trimMat=new THREE.MeshStandardMaterial({color:pal.trim,roughness:0.7,metalness:0.2});
   var body2=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),bMat2);
-  body2.castShadow=true;body2.receiveShadow=true;body2.material.roughness=0.85;body2.material.metalness=0.05;
+  body2.castShadow=true;body2.receiveShadow=true;
   body2.position.set(x,h/2,z);scene.add(body2);
   var gw=new THREE.Mesh(new THREE.BoxGeometry(w*0.96,h*0.95,0.5),glassMat);
   gw.position.set(x,h/2,z+d/2+0.1);scene.add(gw);
@@ -556,7 +571,6 @@ function buildItem(type){
     playerCoins-=cost;
     updateCoinDisplay();
     toggleBuildMenu();
-    setTimeout(function(){ quickSave(); }, 100);
     var pos=placePos();
     var x=pos.x, z=pos.z;
 
@@ -570,7 +584,7 @@ function buildItem(type){
     else if(type==='tennis'){ var b7=scene.children.length; buildTennisCourt(x,z); placedObjects.push({meshes:scene.children.slice(b7),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('🎾 Tennis Court / テニスコート'); }
     else if(type==='soccer'){ var b8=scene.children.length; buildSoccerField(x,z); placedObjects.push({meshes:scene.children.slice(b8),type:type,cost:cost,x:x,z:z,player:currentPlayer||"guest"}); showNotif('⚽ Soccer Field / サッカー場'); }
     else if(type==='road'){
-      var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.95,metalness:0.0}));
+      var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92}));
       rm.rotation.x=-Math.PI/2; rm.position.set(x,0.12,z); rm.receiveShadow=true; scene.add(rm);
       // 中央線: N/S向き→縦(Z方向), E/W向き→横(X方向)
       var isNS=(pos.dir==='N'||pos.dir==='S');
@@ -743,7 +757,6 @@ function doRemoveObject(obj){
   playerCoins+=obj.cost;
   updateCoinDisplay();
   showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
-  setTimeout(function(){ quickSave(); }, 100);
 }
 
 function recoverLast(){
@@ -768,7 +781,7 @@ function recoverLast(){
     var dist=dx*dx+dz*dz;
     if(dist<bestDist){ bestDist=dist; bestIdx=i; }
   }
-  if(bestIdx<0){ showNotif('❌ Own builds only / 自分のビルドのみ回収可能'); return; }
+  if(bestIdx<0){ showNotif('回収できるものがありません\n（自分が建てたものだけ回収できます）'); return; }
 
   var obj=placedObjects.splice(bestIdx,1)[0];
   doRemoveObject(obj);
@@ -1602,7 +1615,7 @@ function buildGrass(x,z){
   // ベース: 四角い草地
   var dirtMat=new THREE.MeshStandardMaterial({color:0x3a7a18,roughness:0.98,envMapIntensity:0.0});
   var base=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),dirtMat);
-  base.rotation.x=-Math.PI/2; base.position.set(x,0.02,z); base.receiveShadow=true; scene.add(base);
+  base.rotation.x=-Math.PI/2; base.position.set(x,0.02,z); scene.add(base);
   var greenCols=[0x1a6e0a,0x2a8010,0x38941a,0x157808,0x0f6005];
   var weedCols=[0x40aa10,0x28a008,0x52b820,0x6acc28];
   var i,ox,oz,h,blade,weed,tip;
@@ -2526,27 +2539,6 @@ function spawnPerson(startX,startZ){
 // IndexedDB セーブ
 // ===== セーブ: 複数手段でフォールバック =====
 var _saveKey='ignis_v4';
-// リアルタイム同期用: 建設直後に即座保存
-function quickSave(){
-  if(typeof scene==='undefined') return;
-  try{
-    var myBuilds=[];
-    placedObjects.forEach(function(o){
-      if(o.type==='car'||o.type==='bike'||o.type==='person') return;
-      myBuilds.push({t:o.type,x:o.x,z:o.z,p:currentPlayer||'guest'});
-    });
-    var myGr={};
-    Object.keys(growRegistry).forEach(function(k){ myGr[k]=growRegistry[k].level; });
-    var data={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
-    try{ localStorage.setItem(_saveKey,JSON.stringify(data)); }catch(e1){}
-    fetch(FIREBASE_URL + '/city_ignis.json', {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    }).catch(function(){});
-  }catch(e){}
-}
-
 function saveCity(){
   if(typeof scene==='undefined'||typeof playerCoins==='undefined') return;
   try{
@@ -2563,7 +2555,7 @@ function saveCity(){
 
     // FirebaseにREST APIで保存（CORSなし！）
     showNotif('💾 Saving... / 保存中...');
-    fetch(FIREBASE_URL + '/city_ignis.json', {
+    fetch(FIREBASE_URL + '/myworld/' + encodeURIComponent(_worldOwner.replace('@','')) + '.json', {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(localData)
@@ -2578,7 +2570,7 @@ function rebuildItem(type,x,z,player){
   if(type==='road'){
     var rk=x+'_'+z; roadTiles.add(rk);
     var rm=new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE),
-      new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.95,metalness:0.0,envMapIntensity:0}));
+      new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.92,envMapIntensity:0}));
     rm.rotation.x=-Math.PI/2; rm.position.set(x,0.08,z); scene.add(rm);
     var yl=new THREE.Mesh(new THREE.PlaneGeometry(0.4,TILE),
       new THREE.MeshBasicMaterial({color:0xffcc00,transparent:true,opacity:0.9}));
@@ -2617,7 +2609,7 @@ function rebuildItem(type,x,z,player){
 
 function loadCity(onDone){
   // FirebaseからリアルタイムDBで取得
-  var fbUrl = FIREBASE_URL + '/city_ignis.json?t=' + Date.now();
+  var fbUrl = FIREBASE_URL + '/myworld/' + encodeURIComponent(_worldOwner.replace('@','')) + '.json?t=' + Date.now();
   fetch(fbUrl)
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(data){
@@ -2642,49 +2634,6 @@ function _loadFromLocal(onDone){
     console.warn('loadCity local:',e);
     if(onDone) onDone(false);
   }
-}
-
-// リアルタイム同期: Firebaseのデータを差分反映
-function _syncFromFirebase(data){
-  try{
-    if(!data || !data.builds) return;
-    // 現在の建物をすべて削除（car/bike/person以外）
-    for(var i=placedObjects.length-1;i>=0;i--){
-      var o=placedObjects[i];
-      if(o.type==='car'||o.type==='bike'||o.type==='person') continue;
-      o.meshes.forEach(function(m){ scene.remove(m); });
-    }
-    placedObjects = placedObjects.filter(function(o){
-      return o.type==='car'||o.type==='bike'||o.type==='person';
-    });
-    growRegistry={};
-    roadTiles.clear();
-    curveTiles.clear();
-    windowMeshes=[];
-
-    // growRegistryを復元
-    var gr=data.gr||{};
-    Object.keys(gr).forEach(function(k){
-      if(!growRegistry[k]) growRegistry[k]={level:0,meshes:[],maxLevel:5};
-      growRegistry[k].level=gr[k];
-    });
-
-    // 建物を再構築
-    var builds=data.builds||[];
-    builds.forEach(function(b){
-      try{
-        var beforePlaced=placedObjects.length;
-        rebuildItem(b.t||b.type, b.x, b.z, b.p||b.player||'guest');
-        if(placedObjects.length===beforePlaced){
-          var newMeshes=scene.children.slice(scene.children.length-1);
-          placedObjects.push({meshes:newMeshes,type:b.t||b.type,cost:0,x:b.x,z:b.z,player:b.p||b.player||'guest'});
-        } else {
-          placedObjects[placedObjects.length-1].player=b.p||b.player||'guest';
-        }
-      }catch(e){}
-    });
-    showNotif('🔄 Updated! / 街が更新されました');
-  }catch(e){ console.warn('sync error:', e); }
 }
 
 function _applyLoadedData(data, onDone){
@@ -2804,7 +2753,6 @@ function initGame(){
     );
     gridPlane.rotation.x=-Math.PI/2;
     gridPlane.position.y=0.07;
-    gridPlane.receiveShadow=false;
     scene.add(gridPlane);
   })();
 
@@ -3205,7 +3153,7 @@ function initGame(){
   // GitHubから共有データをロード
   setTimeout(function(){
     loadCity(function(ok){
-      if(!ok) showNotif('🗺️ Build your city! / 新しい街を作ろう！');
+      if(!ok) showNotif('🗺️ 新しい街を作ろう！');
     });
   }, 400);
   // 手動セーブボタン追加
@@ -3215,29 +3163,36 @@ function initGame(){
     sb.style.cssText='position:fixed;bottom:308px;right:16px;padding:4px 8px;background:rgba(0,80,160,0.85);color:#fff;border:none;border-radius:6px;font-size:10px;cursor:pointer;z-index:200;';
     sb.addEventListener('click',function(){ saveCity(); });
     document.body.appendChild(sb);
+
+    // 共有URLボタン
+    var shareBtn=document.createElement('button');
+    shareBtn.textContent='🔗 SHARE';
+    shareBtn.style.cssText='position:fixed;bottom:278px;right:16px;padding:4px 8px;background:rgba(0,0,0,0.75);color:rgba(255,160,60,0.9);border:1px solid rgba(255,120,30,0.4);border-radius:6px;font-size:10px;cursor:pointer;z-index:200;font-family:Orbitron,monospace;letter-spacing:1px;';
+    shareBtn.addEventListener('click',function(){
+      var shareUrl = location.origin + location.pathname + '?n=' + encodeURIComponent(_worldOwner);
+      navigator.clipboard.writeText(shareUrl).then(function(){
+        shareBtn.textContent='✅ COPIED!';
+        shareBtn.style.color='rgba(100,255,100,0.9)';
+        setTimeout(function(){ shareBtn.textContent='🔗 SHARE'; shareBtn.style.color='rgba(255,160,60,0.9)'; }, 2000);
+      }).catch(function(){
+        // fallback
+        var ta=document.createElement('textarea');
+        ta.value=shareUrl;
+        ta.style.cssText='position:fixed;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        shareBtn.textContent='✅ COPIED!';
+        shareBtn.style.color='rgba(100,255,100,0.9)';
+        setTimeout(function(){ shareBtn.textContent='🔗 SHARE'; shareBtn.style.color='rgba(255,160,60,0.9)'; }, 2000);
+      });
+    });
+    document.body.appendChild(shareBtn);
   })();
   // 自動セーブ（5分ごと）・離脱時セーブ
   setInterval(function(){ saveCity(); }, 300000);
-
-  // リアルタイム同期: 10秒ごとに他の人の変更を検知
-  var _lastBuildCount = 0;
-  var _lastBuildHash = '';
-  setInterval(function(){
-    fetch(FIREBASE_URL + '/city_ignis.json?t=' + Date.now())
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(!data || !data.builds) return;
-        // ハッシュで変化を検知（自分の操作直後は無視）
-        var newHash = data.builds.length + '_' + (data.builds[data.builds.length-1] ? JSON.stringify(data.builds[data.builds.length-1]) : '');
-        if(newHash !== _lastBuildHash && _lastBuildHash !== ''){
-          // 他の人が建設・回収した！差分を反映
-          _syncFromFirebase(data);
-        }
-        _lastBuildHash = newHash;
-      }).catch(function(){});
-  }, 10000);
   window.addEventListener('beforeunload', function(){ saveCity(); });
-  setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
+  setTimeout(function(){ showNotif('🌟 MY WORLD — ' + (_worldOwner||'GUEST') + ' の街'); }, 600);
   // Firebase会員チェック
   function checkMembership(xid, callback){
     var cleanId = encodeURIComponent(xid.replace('@',''));
@@ -3320,22 +3275,41 @@ function initGame(){
     });
   }
 
-  // プレイヤー名が未設定なら入力を促す
-  if(!currentPlayer){
-    setTimeout(function(){ showLoginDialog(); }, 1500);
-  } else {
-    // 保存済みIDがあれば自動で会員チェック
-    checkMembership(currentPlayer, function(ok){
-      isMember = ok;
-      updateMemberCard();
-      setTimeout(function(){
-        if(ok){
-          showNotif('🔥 ようこそ会員 ' + currentPlayer + ' さん！');
+  // MY WORLD: URLのトークンで自動認証
+  if(currentPlayer && _urlToken){
+    // トークン検証: FirebaseのメンバーIDを取得してトークン照合
+    fetch(FIREBASE_URL + '/members/' + encodeURIComponent(currentPlayer.replace('@','')) + '.json')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.id){
+          var expected = _generateToken(currentPlayer, d.id);
+          if(_urlToken === expected){
+            isMember = d.rank || true;
+            updateMemberCard();
+            setTimeout(function(){ showNotif('🔥 MY WORLD — ' + currentPlayer + ' さん！建設OK！'); }, 1500);
+          } else {
+            isMember = false;
+            updateMemberCard();
+            setTimeout(function(){ showNotif('👁️ ' + currentPlayer + ' さんのワールドを探検中...'); }, 1500);
+          }
         } else {
-          showNotif('👁️ ようこそ ' + currentPlayer + ' さん（探検モード）');
+          isMember = false;
+          updateMemberCard();
+          setTimeout(function(){ showNotif('👁️ 探検モードで入場'); }, 1500);
         }
-      }, 1500);
-    });
+      }).catch(function(){
+        isMember = false;
+        updateMemberCard();
+      });
+  } else if(currentPlayer) {
+    // tなし = 探検のみ
+    isMember = false;
+    updateMemberCard();
+    setTimeout(function(){ showNotif('👁️ ' + currentPlayer + ' さんのワールドを探検中...'); }, 1500);
+  } else {
+    // n もなし = 誰かのワールドに直アクセス
+    isMember = false;
+    setTimeout(function(){ showNotif('👁️ IGNIS MY WORLD — 探検モード'); }, 1500);
   }
 }
 

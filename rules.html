@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IGNIS RULES</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: #000 !important; }
+body { min-height: 100vh; background: #000; font-family: 'Rajdhani', sans-serif; color: #fff; overflow-x: hidden; padding: 40px 20px 60px; }
+#particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.bg-glow { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(255,60,0,0.15) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+.content { position: relative; z-index: 10; max-width: 520px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 40px; animation: fadeDown 0.8s ease both; }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+.header-icon { font-size: 56px; animation: flameWiggle 0.8s ease-in-out infinite alternate; display: block; margin-bottom: 12px; }
+@keyframes flameWiggle { from { transform: rotate(-4deg) scale(1); } to { transform: rotate(4deg) scale(1.12); } }
+.header-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(32px,9vw,56px);
+  font-weight: 900;
+  letter-spacing: clamp(6px,3vw,16px);
+  background: linear-gradient(180deg,#ffee00 0%,#ffaa00 40%,#ff4400 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: flameLogo 3s ease-in-out infinite;
+}
+@keyframes flameLogo {
+  0% { filter: drop-shadow(0 0 4px rgba(255,100,0,0.6)) drop-shadow(0 0 8px rgba(255,60,0,0.3)); transform: skewX(-0.3deg); opacity: 0.75; }
+  25% { filter: drop-shadow(0 0 20px rgba(255,160,0,1.0)) drop-shadow(0 0 40px rgba(255,80,0,0.8)); transform: skewX(0.4deg); opacity: 1.0; }
+  50% { filter: drop-shadow(0 0 6px rgba(255,80,0,0.5)) drop-shadow(0 0 12px rgba(255,40,0,0.3)); transform: skewX(-0.2deg); opacity: 0.7; }
+  75% { filter: drop-shadow(0 0 24px rgba(255,180,0,1.0)) drop-shadow(0 0 48px rgba(255,100,0,0.9)); transform: skewX(0.3deg); opacity: 1.0; }
+  100% { filter: drop-shadow(0 0 4px rgba(255,100,0,0.6)) drop-shadow(0 0 8px rgba(255,60,0,0.3)); transform: skewX(-0.3deg); opacity: 0.75; }
+}
+.header-sub { font-size: 12px; letter-spacing: 5px; color: rgba(255,170,60,0.9); margin-top: 10px; text-transform: uppercase; font-weight: 700; }
+.divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,80,0,0.7), transparent); margin: 24px 0 36px; }
+.section { margin-bottom: 36px; animation: fadeUp 0.6s ease both; }
+.section:nth-child(1){animation-delay:0.2s}.section:nth-child(2){animation-delay:0.35s}.section:nth-child(3){animation-delay:0.5s}.section:nth-child(4){animation-delay:0.65s}.section:nth-child(5){animation-delay:0.8s}
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,80,0,0.4); }
+.section-num { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; color: #000; background: linear-gradient(135deg,#ff6600,#ffaa00); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 15px rgba(255,100,0,0.7),0 0 30px rgba(255,60,0,0.4); animation: numGlow 2s ease-in-out infinite; }
+@keyframes numGlow { 0%,100%{box-shadow:0 0 15px rgba(255,100,0,0.7),0 0 30px rgba(255,60,0,0.4)} 50%{box-shadow:0 0 25px rgba(255,150,0,1.0),0 0 50px rgba(255,80,0,0.6)} }
+.section-title { font-family: 'Cinzel', serif; font-size: clamp(15px,4.5vw,20px); font-weight: 700; letter-spacing: 2px; color: #fff; text-shadow: 0 0 12px rgba(255,100,0,0.5); }
+.section-title-ja { font-size: 11px; letter-spacing: 2px; color: rgba(255,150,60,0.8); margin-top: 3px; }
+.rule-item { display: flex; gap: 14px; padding: 10px 4px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,80,0,0.1); }
+.rule-item:last-child { border-bottom: none; }
+.rule-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.rule-en { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #fff; margin-bottom: 4px; }
+.rule-ja { font-size: 12px; color: rgba(255,170,70,0.9); line-height: 1.6; }
+.coin-table,.rank-table { background: rgba(255,40,0,0.06); border: 1px solid rgba(255,80,0,0.3); border-radius: 10px; overflow: hidden; margin-top: 12px; }
+.coin-row,.rank-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid rgba(255,80,0,0.15); gap: 12px; }
+.coin-row:last-child,.rank-row:last-child { border-bottom: none; }
+.header-row { background: rgba(255,80,0,0.12); font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: rgba(255,150,60,0.9); }
+.coin-action { flex: 2; font-size: 12px; color: #fff; font-weight: 600; line-height: 1.4; }
+.coin-amount { flex: 1; font-size: 13px; font-weight: 700; color: #ffcc00; text-align: right; text-shadow: 0 0 8px rgba(255,200,0,0.6); }
+.coin-limit { flex: 1.2; font-size: 12px; font-weight: 700; color: rgba(255,180,80,1.0); text-align: right; line-height: 1.4; text-shadow: 0 0 6px rgba(255,100,0,0.5); }
+.rank-name { flex: 1.5; font-size: 13px; font-weight: 700; }
+.rank-mult { flex: 1; font-size: 13px; font-weight: 700; color: #ffcc00; text-shadow: 0 0 8px rgba(255,200,0,0.6); }
+.rank-reply { flex: 1.5; font-size: 13px; font-weight: 700; color: rgba(255,200,80,1.0); text-shadow: 0 0 6px rgba(255,150,0,0.6); }
+.myworld-box { background: rgba(120,0,255,0.15); border: 2px solid rgba(160,0,255,0.7); border-radius: 10px; padding: 16px 18px; margin-top: 10px; box-shadow: 0 0 20px rgba(120,0,255,0.3), inset 0 0 15px rgba(100,0,255,0.1); animation: myworldGlow 3s ease-in-out infinite; }
+.myworld-note { font-size: 13px; font-weight: 700; color: rgba(210,150,255,1.0); line-height: 1.7; margin-bottom: 10px; text-shadow: 0 0 10px rgba(150,0,255,0.6); }
+.myworld-future { font-size: 12px; color: rgba(180,120,255,0.95); border-top: 1px solid rgba(160,0,255,0.4); padding-top: 10px; margin-top: 6px; font-style: italic; }
+.warning-box { background: rgba(255,40,0,0.1); border: 1px solid rgba(255,60,0,0.7); border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; animation: warnPulse 2.5s ease-in-out infinite; }
+@keyframes warnPulse { 0%,100%{box-shadow:0 0 12px rgba(255,40,0,0.3);border-color:rgba(255,60,0,0.6)} 50%{box-shadow:0 0 30px rgba(255,60,0,0.6),inset 0 0 20px rgba(255,40,0,0.1);border-color:rgba(255,120,0,1.0)} }
+.warning-title { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 900; letter-spacing: 2px; color: #ff4400; margin-bottom: 10px; }
+.warning-list { list-style: none; }
+.warning-list li { font-size: 13px; color: rgba(255,160,60,0.95); padding: 5px 0; border-bottom: 1px solid rgba(255,60,0,0.1); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+.warning-list li:last-child { border-bottom: none; }
+.card-highlight { background: rgba(255,60,0,0.15); border: 2px solid rgba(255,100,0,0.9); border-radius: 10px; padding: 18px 20px; margin-bottom: 12px; animation: cardGlow 2s ease-in-out infinite; box-shadow: 0 0 20px rgba(255,80,0,0.4), inset 0 0 15px rgba(255,50,0,0.1); }
+@keyframes myworldGlow { 0%,100%{box-shadow:0 0 15px rgba(120,0,255,0.3),inset 0 0 10px rgba(100,0,255,0.08);border-color:rgba(140,0,255,0.6)} 50%{box-shadow:0 0 35px rgba(160,0,255,0.6),inset 0 0 25px rgba(120,0,255,0.15);border-color:rgba(200,50,255,1.0)} }
+@keyframes cardGlow { 0%,100%{box-shadow:0 0 15px rgba(255,80,0,0.4),inset 0 0 10px rgba(255,50,0,0.08);border-color:rgba(255,100,0,0.8)} 50%{box-shadow:0 0 40px rgba(255,120,0,0.8),inset 0 0 25px rgba(255,60,0,0.15);border-color:rgba(255,180,0,1.0)} }
+.card-highlight .rule-en { font-size: 16px; color: #ffdd88; text-shadow: 0 0 12px rgba(255,150,0,0.8); }
+.card-highlight .rule-ja { font-size: 13px; color: rgba(255,200,100,1.0); line-height: 1.7; text-shadow: 0 0 8px rgba(255,120,0,0.4); }
+.back-btn { display: block; text-align: center; margin-top: 48px; padding: 16px 32px; background: rgba(255,80,0,0.1); border: 1px solid rgba(255,80,0,0.5); border-radius: 10px; color: rgba(255,150,60,0.9); text-decoration: none; font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; transition: all 0.3s; }
+.back-btn:hover { background: rgba(255,80,0,0.2); border-color: rgba(255,120,0,0.8); color: #fff; }
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="bg-glow"></div>
+<div class="content">
+  <div class="header">
+    <div class="header-title">IGNIS RULES</div>
+    <div class="header-sub">コミュニティルール / Community Rules</div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- 1 -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div><div class="section-title">COIN SYSTEM</div><div class="section-title-ja">コインシステム</div></div>
+    </div>
+    <div class="rule-item"><div class="rule-icon">💰</div><div class="rule-text"><div class="rule-en">Earn coins through X activity</div><div class="rule-ja">Xでの活動でコインを獲得できます。獲得したコインでIGNIS WORLDに建物を建設できます。</div></div></div>
+    <div class="coin-table">
+      <div class="coin-row header-row"><div class="coin-action">ACTION / 行動</div><div class="coin-amount">COINS</div><div class="coin-limit">LIMIT / 上限</div></div>
+      <div class="coin-row"><div class="coin-action">創設者の投稿へリプライ<br>Reply to founder's post</div><div class="coin-amount">30 coins</div><div class="coin-limit">5回/日<br>5x/day</div></div>
+      <div class="coin-row"><div class="coin-action">創設者の投稿をリポスト<br>Repost founder's post</div><div class="coin-amount">20 coins</div><div class="coin-limit">無制限<br>Unlimited</div></div>
+      <div class="coin-row"><div class="coin-action">コミュニティリプライ<br>Community reply</div><div class="coin-amount">15 coins</div><div class="coin-limit">無制限<br>Unlimited</div></div>
+      <div class="coin-row"><div class="coin-action">コミュニティ投稿<br>Community post</div><div class="coin-amount">5 coins</div><div class="coin-limit">2回/日<br>2x/day</div></div>
+    </div>
+    <div style="background:rgba(255,80,0,0.06);border:1px solid rgba(255,80,0,0.3);border-radius:8px;padding:12px 16px;margin-top:12px;font-size:12px;color:rgba(255,180,80,0.95);line-height:1.7;">
+      <span style="color:#ff8800;font-weight:700;">※ 重要 / IMPORTANT</span><br>
+      リプライは投稿の内容に触れた文章でないとカウント対象外になります。<br>
+      <span style="color:rgba(255,160,60,0.8);">Replies must engage with the content of the post to be counted. Generic replies will not be counted.</span>
+    </div>
+    <div class="rule-item" style="margin-top:14px;"><div class="rule-icon">⬆️</div><div class="rule-text"><div class="rule-en">Higher rank = More coins earned</div><div class="rule-ja">ランクが高いほど獲得コインの倍率がアップします。</div></div></div>
+    <div class="rank-table">
+      <div class="rank-row header-row"><div class="rank-name">RANK</div><div class="rank-mult">RATE</div><div class="rank-reply">リプライ例 / Example</div></div>
+      <div class="rank-row"><div class="rank-name" style="color:#aaa;">RANK 1 — WHITE</div><div class="rank-mult">×1.0</div><div class="rank-reply">30 coins</div></div>
+      <div class="rank-row"><div class="rank-name" style="color:#ff4444;">RANK 2 — RED</div><div class="rank-mult">×1.5</div><div class="rank-reply">45 coins</div></div>
+      <div class="rank-row"><div class="rank-name" style="color:#d4a017;">RANK 3 — GOLD</div><div class="rank-mult">×2.0</div><div class="rank-reply">60 coins</div></div>
+      <div class="rank-row"><div class="rank-name" style="color:#aa44ff;">RANK 4 — RAINBOW</div><div class="rank-mult">×3.0</div><div class="rank-reply">90 coins</div></div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div><div class="section-title">GAME RULES</div><div class="section-title-ja">ゲームのルール</div></div>
+    </div>
+    <div class="rule-item"><div class="rule-icon">🏙️</div><div class="rule-text"><div class="rule-en">IGNIS WORLD is a shared city</div><div class="rule-ja">IGNIS WORLDはみんなで作る共有の街です。協力して建設しましょう。</div></div></div>
+    <div class="rule-item"><div class="rule-icon">🌟</div><div class="rule-text"><div class="rule-en">MY WORLD is your personal space</div><div class="rule-ja">MY WORLDはあなただけの個人空間。自由に街を作れます。</div></div></div>
+    <div class="myworld-box">
+      <div class="myworld-note">🔒 MY WORLDはRANK 2以上から解放されます。<br>MY WORLD is unlocked from RANK 2 and above.<br><br>📲 RANK 2以上になるとデジタル会員証の裏面にMY WORLDで遊べるQRコードが追加されます！<br><span style="color:rgba(180,120,255,0.85);font-size:11px;">When you reach RANK 2, a QR code to access MY WORLD will be added to the back of your digital member card.</span></div>
+      <div class="myworld-future">※ コンテストについては今後タイミングを見て告知予定です。お楽しみに！<br>※ Contests will be announced at the right time. Stay tuned!</div>
+    </div>
+    <div class="rule-item"><div class="rule-icon">↩️</div><div class="rule-text"><div class="rule-en">You can only recover your own buildings</div><div class="rule-ja">回収できるのは自分が建てた建物のみです。他人の建物は回収不可。</div></div></div>
+  </div>
+
+  <!-- 3 -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div><div class="section-title">MEMBER CARD</div><div class="section-title-ja">デジタル会員証について</div></div>
+    </div>
+    <div class="card-highlight">
+      <div class="rule-item" style="padding:0;border:none;margin:0;"><div class="rule-icon">🪪</div><div class="rule-text"><div class="rule-en">Keep your member card private</div><div class="rule-ja">⚠️ 会員証のQRコードは絶対に他人に見せないでください。流出した場合、あなたのデータが悪用される可能性があります。</div></div></div>
+    </div>
+    <div class="card-highlight">
+      <div class="rule-item" style="padding:0;border:none;margin:0;"><div class="rule-icon">🔗</div><div class="rule-text"><div class="rule-en">Share your city using SHARE button only</div><div class="rule-ja">MY WORLDを他人に公開する際は必ずゲーム内の「🔗 SHARE」ボタンを使用してください。QRコードのURLを直接共有しないでください。</div></div></div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div><div class="section-title">PROHIBITED</div><div class="section-title-ja">禁止事項</div></div>
+    </div>
+    <div class="warning-box">
+      <div class="warning-title">⚠️ 違反は退会処分 / VIOLATIONS WILL RESULT IN BAN</div>
+      <ul class="warning-list">
+        <li><span>🚫</span>スパム・荒らし行為 / Spam or trolling</li>
+        <li><span>🚫</span>他メンバーへの嫌がらせ / Harassment</li>
+        <li><span>🚫</span>コインの不正取得 / Fraudulent coin acquisition</li>
+        <li><span>🚫</span>会員証QRの無断共有・流出 / Unauthorized sharing of QR code</li>
+        <li><span>🚫</span>コミュニティの評判を傷つける行為 / Actions damaging the community</li>
+      </ul>
+    </div>
+  </div>
+
+<a class="back-btn" href="https://motomune.github.io/IGNIS-game/links.html">← BACK TO LINKS / 戻る</a>
+
+</div>
+
+<script>
+var canvas=document.getElementById('particles');
+var ctx=canvas.getContext('2d');
+var particles=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);}
+resize();window.addEventListener('resize',resize);
+function Particle(){this.reset(true);}
+Particle.prototype.reset=function(init){this.x=Math.random()*canvas.width;this.y=init?Math.random()*canvas.height:canvas.height+10;this.vx=(Math.random()-0.5)*1.2;this.vy=-(Math.random()*4.0+2.0);this.size=Math.random()*2.5+0.5;this.life=init?Math.random():1.0;this.decay=Math.random()*0.006+0.003;var c=['rgba(255,80,0,','rgba(255,140,0,','rgba(255,200,0,','rgba(255,50,0,'];this.color=c[Math.floor(Math.random()*c.length)];};
+for(var i=0;i<60;i++)particles.push(new Particle());
+function animate(){requestAnimationFrame(animate);ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;p.vx+=(Math.random()-0.5)*0.06;if(p.life<=0||p.y<-10)p.reset(false);ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fillStyle=p.color+(p.life*0.8)+')';ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life*2.5,0,Math.PI*2);ctx.fillStyle=p.color+(p.life*0.12)+')';ctx.fill();});}
+animate();
+</script>
+
+</body>
+</html>

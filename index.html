@@ -132,8 +132,24 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
 }
 </style>
 
+<style>
+#music-btn{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:999;padding:8px 20px;
+  background:rgba(0,0,0,0.7);border:1px solid rgba(255,100,30,0.5);
+  border-radius:20px;color:rgba(255,150,60,0.9);
+  font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;
+  cursor:pointer;transition:all 0.3s;
+}
+#music-btn:hover{background:rgba(255,60,0,0.3);border-color:rgba(255,120,0,0.8);}
+</style>
+
 </head>
 <body>
+<audio id="bgm" loop preload="auto">
+  <source src="https://motomune.github.io/IGNIS-game/ending-bgm.mp3" type="audio/mpeg">
+</audio>
+<button id="music-btn" onclick="toggleMusic()">🔇 MUSIC ON</button>
 <div id="loading">
   <div id="loading-logo">IGNIS</div>
   <div id="loading-sub">WORLD — ENTER THE CITY</div>
@@ -3650,6 +3666,38 @@ function ignisLoop(){
   drawMM();
   renderer.render(scene,camera);
 }
+
+// 音楽制御
+var _musicOn = false;
+var _bgm = document.getElementById('bgm');
+
+function toggleMusic(){
+  var btn = document.getElementById('music-btn');
+  if(_musicOn){
+    _bgm.pause();
+    _musicOn = false;
+    btn.textContent = '🔇 MUSIC ON';
+  } else {
+    _bgm.volume = 0.4;
+    _bgm.play().then(function(){
+      _musicOn = true;
+      btn.textContent = '🔊 MUSIC OFF';
+    }).catch(function(){});
+  }
+}
+
+// 画面タップで音楽自動スタート（1回のみ）
+document.addEventListener('click', function _autoStart(){
+  if(!_musicOn){
+    _bgm.volume = 0.4;
+    _bgm.play().then(function(){
+      _musicOn = true;
+      var btn = document.getElementById('music-btn');
+      if(btn) btn.textContent = '🔊 MUSIC OFF';
+    }).catch(function(){});
+  }
+  document.removeEventListener('click', _autoStart);
+}, {once: false});
 </script>
 
 </body>

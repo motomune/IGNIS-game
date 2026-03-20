@@ -652,10 +652,10 @@ function buildItem(type){
     }
     else if(type==='building'){
       var bk=growKey(x,z,'building');
-      if(!growRegistry[bk]){
+      // Firebaseから復元済みのレベルがあれば積み重ね、なければ1階から
+      if(!growRegistry[bk] || growRegistry[bk]._isLoaded){
         growRegistry[bk]={level:1,meshes:[]};
       } else {
-        // 既存のビル（自分・他人問わず）の上に積み重ね
         growRegistry[bk].level++;
       }
       addGrowableBuilding(x,z,TILE*0.85,TILE*0.85,TILE);
@@ -2652,6 +2652,7 @@ function _applyLoadedData(data, onDone){
     Object.keys(gr).forEach(function(k){
       if(!growRegistry[k]) growRegistry[k]={level:0,meshes:[],maxLevel:5};
       growRegistry[k].level=gr[k];
+      growRegistry[k]._isLoaded=true; // ロード済みフラグ
     });
     var count=0;
     var builds=data.builds||[];
@@ -3177,26 +3178,30 @@ function initGame(){
   // 自動セーブ（5分ごと）・離脱時セーブ
   setInterval(function(){ saveCity(); }, 300000);
 
-  // リアルタイム同期: 15秒ごとにFirebaseをチェック
+  // リアルタイム同期: 10秒ごとにFirebaseをチェック
   var _lastSyncHash = '';
+  var _lastSyncTime = 0;
   setInterval(function(){
+    // 自分がSAVEした直後は同期スキップ（自分の変更を自分に反映しない）
+    if(Date.now() - _lastSyncTime < 8000) return;
     fetch(FIREBASE_URL + '/city_ignis.json?t=' + Date.now())
       .then(function(r){ return r.json(); })
       .then(function(data){
         if(!data || !data.builds) return;
-        var newHash = String(data.builds.length) + '_' + JSON.stringify(data.builds.slice(-1));
+        // ビルド数と最後の5件のハッシュで変化を検知
+        var last5 = data.builds.slice(-5).map(function(b){ return b.t+b.x+b.z+b.p; }).join(',');
+        var newHash = data.builds.length + '_' + last5;
         if(_lastSyncHash === ''){
           _lastSyncHash = newHash;
           return;
         }
         if(newHash !== _lastSyncHash){
           _lastSyncHash = newHash;
-          // 差分検知: 全体を再ロード
           _applyLoadedData(data, null);
           showNotif('🔄 Updated! / 街が更新されました');
         }
       }).catch(function(){});
-  }, 15000);
+  }, 10000);
 
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);

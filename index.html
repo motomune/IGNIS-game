@@ -46,6 +46,9 @@
   #mobile-controls{display:none;position:fixed;bottom:0;left:0;right:0;height:220px;pointer-events:none;z-index:20;}
   #jleft-wrap{position:absolute;bottom:30px;left:30px;pointer-events:all;}
   #jright-wrap{position:absolute;bottom:30px;right:130px;pointer-events:all;}
+  @media (hover: hover) and (pointer: fine) {
+    #jleft-wrap, #jright-wrap { display: none !important; }
+  }
   .j-base{width:100px;height:100px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid rgba(255,80,0,0.35);position:relative;}
   .j-knob{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,100,0,0.85),rgba(200,30,0,0.5));border:1px solid rgba(255,100,0,0.7);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 14px rgba(255,80,0,0.6);}
   .j-label{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:3px;color:rgba(255,100,0,0.4);text-align:center;margin-top:6px;}
@@ -649,8 +652,12 @@ function buildItem(type){
     }
     else if(type==='building'){
       var bk=growKey(x,z,'building');
-      if(!growRegistry[bk]) growRegistry[bk]={level:1,meshes:[]};
-      else growRegistry[bk].level++;
+      if(!growRegistry[bk]){
+        growRegistry[bk]={level:1,meshes:[]};
+      } else {
+        // 既存のビル（自分・他人問わず）の上に積み重ね
+        growRegistry[bk].level++;
+      }
       addGrowableBuilding(x,z,TILE*0.85,TILE*0.85,TILE);
       placedObjects.push({meshes:growRegistry[bk].meshes.slice(),type:type,cost:cost,x:x,z:z,key:bk,player:currentPlayer||"guest"});
       showNotif('ビル '+growRegistry[bk].level+'F！');
@@ -1857,7 +1864,6 @@ function addGrowableHouse(x,z){
 function addGrowableBuilding(x,z,w,d2,baseH){
   var key=growKey(x,z,'building');
   if(!growRegistry[key]) growRegistry[key]={level:1,meshes:[]};
-  // ※ levelはbuildItem側で既に設定済みなのでここではリセットしない
   var d=growRegistry[key];
   removeMeshGroup(d.meshes); d.meshes=[];
   var floorH=8; // mkBと同じ高さに統一
@@ -3170,6 +3176,27 @@ function initGame(){
   })();
   // 自動セーブ（5分ごと）・離脱時セーブ
   setInterval(function(){ saveCity(); }, 300000);
+
+  // リアルタイム同期: 15秒ごとにFirebaseをチェック
+  var _lastSyncHash = '';
+  setInterval(function(){
+    fetch(FIREBASE_URL + '/city_ignis.json?t=' + Date.now())
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(!data || !data.builds) return;
+        var newHash = String(data.builds.length) + '_' + JSON.stringify(data.builds.slice(-1));
+        if(_lastSyncHash === ''){
+          _lastSyncHash = newHash;
+          return;
+        }
+        if(newHash !== _lastSyncHash){
+          _lastSyncHash = newHash;
+          // 差分検知: 全体を再ロード
+          _applyLoadedData(data, null);
+          showNotif('🔄 Updated! / 街が更新されました');
+        }
+      }).catch(function(){});
+  }, 15000);
 
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);

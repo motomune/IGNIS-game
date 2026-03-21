@@ -230,7 +230,7 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
     <div class="build-item" onclick="buildItem('tennis')"><div class="bi-icon">🎾</div><span class="bi-name">TENNIS<br>テニス</span><div class="bi-cost">💰120c</div></div>
     <div class="build-item" onclick="buildItem('soccer')"><div class="bi-icon">⚽</div><span class="bi-name">SOCCER<br>サッカー</span><div class="bi-cost">💰200c</div></div>
   </div>
-  <div id="build-close" onclick="toggleBuildMenu()">✕ CLOSE</div>
+  <div id="build-close" onclick="toggleBuildMenu()">✕ CLOSE / 閉じる</div>
 </div>
 
 <div id="kb-controls">
@@ -383,8 +383,13 @@ function playSfx(type){
     }
   }catch(e){}
 }
-// 建設/回収直後にFirebaseへ即時保存（コインは含まない）
+// 建設/回収直後にFirebaseへ即時保存（デバウンス付き）
+var _autoSaveTimer = null;
 function autoSaveToFirebase(){
+  if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(function(){ _doAutoSave(); }, 1000);
+}
+function _doAutoSave(){
   try{
     var myBuilds=[];
     placedObjects.forEach(function(o){
@@ -402,7 +407,6 @@ function autoSaveToFirebase(){
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(data)
     }).then(function(){
-      // 自分のハッシュを更新（自分の変更を自分に再反映しない）
       var last5=myBuilds.slice(-5).map(function(b){return b.t+b.x+b.z+b.p;}).join(',');
       _lastSyncHash = myBuilds.length + '_' + last5;
       _lastSyncTime = Date.now();
@@ -3273,7 +3277,7 @@ function initGame(){
           try{ _applyLoadedData(data, null); showNotif('🔄 Updated! / 街が更新されました'); }catch(e){ console.warn('sync apply error:',e); }
         }
       }).catch(function(){});
-  }, 10000);
+  }, 15000);
 
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);

@@ -393,7 +393,7 @@ function autoSaveToFirebase(){
     });
     var myGr={};
     Object.keys(growRegistry).forEach(function(k){ myGr[k]=growRegistry[k].level; });
-    var data={v:5,coins:playerCoins,cycle:cycle||0,builds:myBuilds,gr:myGr};
+    var _c=0; try{_c=cycle||0;}catch(e){} var data={v:5,coins:playerCoins,cycle:_c,builds:myBuilds,gr:myGr};
     // localStorageにも保存
     try{ localStorage.setItem(_saveKey,JSON.stringify(data)); }catch(e1){}
     // Firebaseに送信
@@ -723,10 +723,12 @@ function buildItem(type){
     }
     else if(type==='building'){
       var bk=growKey(x,z,'building');
-      // Firebaseから復元済みのレベルがあれば積み重ね、なければ1階から
       if(!growRegistry[bk] || growRegistry[bk]._isLoaded){
         growRegistry[bk]={level:1,meshes:[]};
       } else {
+        if(growRegistry[bk].level >= 50){
+          showNotif('⚠️ Max 400m / 最大400mです (50階)'); return;
+        }
         growRegistry[bk].level++;
       }
       addGrowableBuilding(x,z,TILE*0.85,TILE*0.85,TILE);
@@ -799,48 +801,45 @@ function toggleRecoveryMode(){
 }
 
 function doRemoveObject(obj){
-  // meshes を scene から除去
-  obj.meshes.forEach(function(m){
-    if(!m) return;
-    scene.remove(m);
-    for(var wi=windowMeshes.length-1;wi>=0;wi--){
-      if(windowMeshes[wi].mesh===m) windowMeshes.splice(wi,1);
+  try{
+    // meshesをsceneから安全に除去
+    if(obj.meshes){
+      obj.meshes.forEach(function(m){
+        if(!m) return;
+        try{ scene.remove(m); }catch(e){}
+        for(var wi=windowMeshes.length-1;wi>=0;wi--){
+          if(windowMeshes[wi] && windowMeshes[wi].mesh===m) windowMeshes.splice(wi,1);
+        }
+        for(var bi=beaconMeshes.length-1;bi>=0;bi--){
+          if(beaconMeshes[bi] && (beaconMeshes[bi].core===m||beaconMeshes[bi].glow===m)) beaconMeshes.splice(bi,1);
+        }
+      });
     }
-    for(var bi=beaconMeshes.length-1;bi>=0;bi--){
-      if(beaconMeshes[bi].core===m||beaconMeshes[bi].glow===m) beaconMeshes.splice(bi,1);
+    if(obj.movingRef){
+      var mri=movingObjects.indexOf(obj.movingRef);
+      if(mri!==-1) movingObjects.splice(mri,1);
     }
-    for(var vli=vehicleLights.length-1;vli>=0;vli--){
-      // groupの子なので直接消える
+    if(obj.roadKey) roadTiles.delete(obj.roadKey);
+    if(obj.curveKey) curveTiles.delete(obj.curveKey);
+    // growRegistryからも削除（再描画はしない→クラッシュ防止）
+    if(obj.key && growRegistry[obj.key]){
+      var reg=growRegistry[obj.key];
+      if(reg.meshes){
+        reg.meshes.forEach(function(m){ try{ scene.remove(m); }catch(e){} });
+        reg.meshes=[];
+      }
+      if(reg.level<=1){
+        delete growRegistry[obj.key];
+      } else {
+        reg.level--;
+      }
     }
-  });
-  if(obj.movingRef){
-    var mri=movingObjects.indexOf(obj.movingRef);
-    if(mri!==-1) movingObjects.splice(mri,1);
-  }
-  if(obj.roadKey) roadTiles.delete(obj.roadKey);
-  if(obj.curveKey) curveTiles.delete(obj.curveKey);
-  if(obj.key && growRegistry[obj.key]){
-    var reg=growRegistry[obj.key];
-    reg.meshes.forEach(function(m){ scene.remove(m); });
-    reg.meshes=[];
-    if(reg.level<=1){
-      delete growRegistry[obj.key];
-    } else {
-      reg.level--;
-      var kp=obj.key.split('_');
-      var kx=parseFloat(kp[0]), kz=parseFloat(kp[1]), ktype=kp[2];
-      if(ktype==='glassbuilding') addGrowableGlassBuilding(kx,kz);
-      else if(ktype==='building') addGrowableBuilding(kx,kz,TILE*0.85,TILE*0.85,TILE);
-      else if(ktype==='house') addGrowableHouse(kx,kz);
-      else if(ktype==='school') addGrowableSchool(kx,kz);
-      else if(ktype==='mountain') addGrowableMountain(kx,kz);
-    }
-  }
-  playerCoins+=obj.cost;
-  updateCoinDisplay();
-  playSfx('remove');
-  showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
-  setTimeout(function(){ autoSaveToFirebase(); }, 200);
+    playerCoins+=obj.cost;
+    updateCoinDisplay();
+    playSfx('remove');
+    showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
+    setTimeout(function(){ autoSaveToFirebase(); }, 200);
+  }catch(e){ console.warn('doRemoveObject error:',e); }
 }
 
 function recoverLast(){
@@ -3271,8 +3270,7 @@ function initGame(){
         }
         if(newHash !== _lastSyncHash){
           _lastSyncHash = newHash;
-          _applyLoadedData(data, null);
-          showNotif('🔄 Updated! / 街が更新されました');
+          try{ _applyLoadedData(data, null); showNotif('🔄 Updated! / 街が更新されました'); }catch(e){ console.warn('sync apply error:',e); }
         }
       }).catch(function(){});
   }, 10000);

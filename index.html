@@ -910,7 +910,7 @@ function recoverLast(){
   doRemoveObject(obj);
 }
 
-function spawnCar(sx,sz){
+function spawnCar(sx,sz){ return; // 無効化（軽量化）
   var colors=[0xcc2200,0x1a3a8a,0x1a6a1a,0xccaa00,0x111111,0xf5f5f5,0x8833aa,0xff6600];
   var col=colors[Math.floor(Math.random()*colors.length)];
   var group=new THREE.Group();
@@ -1008,7 +1008,7 @@ function spawnCar(sx,sz){
   placedObjects.push({meshes:[group],type:'car',cost:BUILD_COSTS.car,x:sx||0,z:sz||0,movingRef:carObj});
 }
 
-function spawnBike(sx,sz){
+function spawnBike(sx,sz){ return; // 無効化（軽量化）
   var cols=[0xcc2200,0x111111,0x1a3888,0xeeee00,0xff6600,0xffffff];
   var col=cols[Math.floor(Math.random()*cols.length)];
   var group=new THREE.Group();
@@ -2806,7 +2806,7 @@ function initGame(){
   vel = new THREE.Vector3();
   renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setSize(window.innerWidth,window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  renderer.setPixelRatio(1.0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
   renderer.shadowMap.enabled=false;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -3554,7 +3554,7 @@ function ignisLoop(){
   // 太陽・月・nightness は上部で処理済み
 
   // 車ライト（sunset〜nightに点灯）
-  if(vehicleLights.length>0){
+  if(false && vehicleLights.length>0){
     var carLightFac=0;
     if(timeLabel==='SUNSET') carLightFac=Math.min(1,(cycle-0.4)/0.12);
     if(timeLabel==='NIGHT') carLightFac=1.0;
@@ -3592,7 +3592,7 @@ function ignisLoop(){
     }
   }
   if(_wf%10===0) updateLOD();
-  if(windowMeshes.length>0 && _wf%3===0){
+  if(false && windowMeshes.length>0){
     var winFac = 0;
     if(cycle >= 0.35 && cycle < 0.55) winFac = (cycle - 0.35) / 0.20;
     else if(cycle >= 0.55 || cycle < 0.08) winFac = 1.0;
@@ -3756,7 +3756,7 @@ function ignisLoop(){
     if(obj.type==='bike') g.rotation.z=obj.dir*0.06;
   });
 
-  riverMeshes.forEach(function(m){
+  if(false) riverMeshes.forEach(function(m){ // 無効化（軽量化）
     if(m.userData.isFountainDrop){
       var d=m.userData;
       var spd = d.dropType==='center'?3.5 : d.dropType==='mid'?2.8 : 2.0;

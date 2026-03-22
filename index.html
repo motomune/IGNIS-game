@@ -453,7 +453,7 @@ function addBuildingLight(x, z, h){
 var _autoSaveTimer = null;
 function autoSaveToFirebase(){
   if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(function(){ _doAutoSave(); }, 1000);
+  _autoSaveTimer = setTimeout(function(){ _doAutoSave(); }, 2000);
 }
 function _doAutoSave(){
   try{
@@ -3339,10 +3339,18 @@ function initGame(){
         }
         if(newHash !== _lastSyncHash){
           _lastSyncHash = newHash;
-          try{ _applyLoadedData(data, null); showNotif('🔄 Updated! / 街が更新されました'); }catch(e){ console.warn('sync apply error:',e); }
+          try{
+            // 建物数が増えた時だけ再描画（重い処理を最小化）
+            var curCount = placedObjects.filter(function(o){ return o.type!=='car'&&o.type!=='bike'&&o.type!=='person'; }).length;
+            var newCount = data.builds ? data.builds.length : 0;
+            if(Math.abs(newCount - curCount) > 0){
+              _applyLoadedData(data, null);
+              showNotif('🔄 Updated! / 街が更新されました');
+            }
+          }catch(e){ console.warn('sync apply error:',e); }
         }
       }).catch(function(){});
-  }, 15000);
+  }, 30000);
 
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);
@@ -3634,7 +3642,7 @@ function ignisLoop(){
   }
   var _wf=_wf||0; _wf++;
   // 地面の色を時間帯に合わせて更新
-  if(_wf%10===0 && typeof gnd !== 'undefined' && gnd && gnd.material){
+  if(_wf%20===0 && typeof gnd !== 'undefined' && gnd && gnd.material){
     if(timeLabel==='DAY' || timeLabel==='MORNING'){
       gnd.material.color.setHex(0x2d6b1a);
     } else if(timeLabel==='SUNSET'){
@@ -3643,7 +3651,7 @@ function ignisLoop(){
       gnd.material.color.setHex(0x0a1a05);
     }
   }
-  if(_wf%5===0) updateLOD();
+  if(_wf%10===0) updateLOD();
   if(windowMeshes.length>0 && _wf%3===0){
     var winFac = 0;
     if(cycle >= 0.35 && cycle < 0.55) winFac = (cycle - 0.35) / 0.20;

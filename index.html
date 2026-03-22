@@ -449,36 +449,6 @@ function addBuildingLight(x, z, h){
   buildingLights.push({light: light, x: x, z: z, h: h});
 }
 
-// 建設/回収直後にFirebaseへ即時保存（デバウンス付き）
-var _autoSaveTimer = null;
-function autoSaveToFirebase(){
-  if(_autoSaveTimer) clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(function(){ _doAutoSave(); }, 2000);
-}
-function _doAutoSave(){
-  try{
-    var myBuilds=[];
-    placedObjects.forEach(function(o){
-      if(o.type==='car'||o.type==='bike'||o.type==='person') return;
-      myBuilds.push({t:o.type,x:o.x,z:o.z,p:o.player||'guest'});
-    });
-    var myGr={};
-    Object.keys(growRegistry).forEach(function(k){ myGr[k]=growRegistry[k].level; });
-    var _c=0; try{_c=cycle||0;}catch(e){} var data={v:5,coins:playerCoins,cycle:_c,builds:myBuilds,gr:myGr};
-    // localStorageにも保存
-    try{ localStorage.setItem(_saveKey,JSON.stringify(data)); }catch(e1){}
-    // Firebaseに送信
-    fetch(FIREBASE_URL + '/city_ignis.json', {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    }).then(function(){
-      var last5=myBuilds.slice(-5).map(function(b){return b.t+b.x+b.z+b.p;}).join(',');
-      _lastSyncHash = myBuilds.length + '_' + last5;
-      _lastSyncTime = Date.now();
-    }).catch(function(){});
-  }catch(e){}
-}
 
 // ── Firebase設定 ──────────────────────────────────────────
 var FIREBASE_URL = 'https://ignis-78c73-default-rtdb.asia-southeast1.firebasedatabase.app';
@@ -715,7 +685,7 @@ function buildItem(type){
     updateCoinDisplay();
     toggleBuildMenu();
     playSfx('place');
-    setTimeout(function(){ autoSaveToFirebase(); }, 300);
+
     var pos=placePos();
     var x=pos.x, z=pos.z;
 
@@ -908,7 +878,7 @@ function doRemoveObject(obj){
     updateCoinDisplay();
     playSfx('remove');
     showNotif('↩️ Removed / 回収！ +'+obj.cost+'c');
-    setTimeout(function(){ autoSaveToFirebase(); }, 200);
+  
   }catch(e){ console.warn('doRemoveObject error:',e); }
 }
 
@@ -3318,39 +3288,9 @@ function initGame(){
     document.body.appendChild(sb);
   })();
   // 自動セーブ（5分ごと）・離脱時セーブ
-  setInterval(function(){ saveCity(); }, 300000);
+  // 自動SAVEなし（SAVEボタンのみ）
 
-  // リアルタイム同期: 10秒ごとにFirebaseをチェック
-  var _lastSyncHash = '';
-  var _lastSyncTime = 0;
-  setInterval(function(){
-    // 自分がSAVEした直後は同期スキップ（自分の変更を自分に反映しない）
-    if(Date.now() - _lastSyncTime < 8000) return;
-    fetch(FIREBASE_URL + '/city_ignis.json?t=' + Date.now())
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(!data || !data.builds) return;
-        // ビルド数と最後の5件のハッシュで変化を検知
-        var last5 = data.builds.slice(-5).map(function(b){ return b.t+b.x+b.z+b.p; }).join(',');
-        var newHash = data.builds.length + '_' + last5;
-        if(_lastSyncHash === ''){
-          _lastSyncHash = newHash;
-          return;
-        }
-        if(newHash !== _lastSyncHash){
-          _lastSyncHash = newHash;
-          try{
-            // 建物数が増えた時だけ再描画（重い処理を最小化）
-            var curCount = placedObjects.filter(function(o){ return o.type!=='car'&&o.type!=='bike'&&o.type!=='person'; }).length;
-            var newCount = data.builds ? data.builds.length : 0;
-            if(Math.abs(newCount - curCount) > 0){
-              _applyLoadedData(data, null);
-              showNotif('🔄 Updated! / 街が更新されました');
-            }
-          }catch(e){ console.warn('sync apply error:',e); }
-        }
-      }).catch(function(){});
-  }, 30000);
+
 
   window.addEventListener('beforeunload', function(){ saveCity(); });
   setTimeout(function(){ showNotif('IGNIS CITY — 全エリア解放済み'); }, 600);

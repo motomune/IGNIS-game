@@ -339,6 +339,7 @@ document.addEventListener('three-ready', function(){
 var placedObjects = [];
 var growRegistry = {};
 var playerCoins = 15000;
+var gnd;
 var recoveryMode = false;
 
 
@@ -383,6 +384,71 @@ function playSfx(type){
     }
   }catch(e){}
 }
+
+// ── LODシステム ──────────────────────────────────────────
+var LOD_HIGH = 200;  // この距離以内は高品質
+var LOD_LOW  = 400;  // この距離以内は低品質表示
+var LOD_HIDE = 1200; // この距離以上は非表示
+
+// 夜景用のビルライト管理
+var buildingLights = [];
+
+function updateLOD(){
+  var camX = camera.position.x;
+  var camZ = camera.position.z;
+  var isNight = (typeof cycle !== 'undefined') && (cycle > 0.55 || cycle < 0.08);
+  var isSunset = (typeof cycle !== 'undefined') && (cycle > 0.4 && cycle <= 0.55);
+  var lightFac = isNight ? 1.0 : (isSunset ? (cycle-0.4)/0.15 : 0);
+
+  placedObjects.forEach(function(obj){
+    if(!obj.meshes || obj.meshes.length === 0) return;
+    var dx = obj.x - camX;
+    var dz = obj.z - camZ;
+    var dist = Math.sqrt(dx*dx + dz*dz);
+
+    if(dist > LOD_HIDE){
+      // 非表示
+      obj.meshes.forEach(function(m){ if(m) m.visible = false; });
+    } else if(dist > LOD_LOW){
+      // 低品質: メインメッシュだけ表示
+      obj.meshes.forEach(function(m, i){
+        if(m) m.visible = (i === 0);
+      });
+    } else if(dist > LOD_HIGH){
+      // 中品質: 主要メッシュ表示・細部非表示
+      obj.meshes.forEach(function(m, i){
+        if(m) m.visible = (i < 3);
+      });
+    } else {
+      // 高品質: 全部表示
+      obj.meshes.forEach(function(m){ if(m) m.visible = true; });
+    }
+  });
+
+  // 夜景: 遠くのビルにぼんやりライト
+  buildingLights.forEach(function(bl){
+    if(!bl.light) return;
+    var dx2 = bl.x - camX;
+    var dz2 = bl.z - camZ;
+    var dist2 = Math.sqrt(dx2*dx2 + dz2*dz2);
+    if(dist2 > LOD_HIGH && dist2 < LOD_HIDE){
+      bl.light.visible = lightFac > 0;
+      bl.light.intensity = lightFac * 3.0;
+    } else {
+      bl.light.visible = false;
+    }
+  });
+}
+
+// ビル建設時に夜景ライトを追加
+function addBuildingLight(x, z, h){
+  var light = new THREE.PointLight(0xffaa44, 0, 300);
+  light.position.set(x, h * 0.6, z);
+  light.visible = false;
+  scene.add(light);
+  buildingLights.push({light: light, x: x, z: z, h: h});
+}
+
 // 建設/回収直後にFirebaseへ即時保存（デバウンス付き）
 var _autoSaveTimer = null;
 function autoSaveToFirebase(){
@@ -472,7 +538,7 @@ var cycle = 0; // グローバル（saveCity からアクセス）
 var timeColors = [
   {sky:0x87ceeb,fog:0x99ddee,amb:0x334466,sun:0xfffde0,si:0.9,label:'MORNING'},
   {sky:0x5ba3d9,fog:0x77aacc,amb:0x334455,sun:0xffffff,si:1.0,label:'DAY'},
-  {sky:0x221008,fog:0x110400,amb:0x180800,sun:0xff6622,si:0.3,label:'SUNSET'},
+  {sky:0x221008,fog:0x331a00,amb:0x1a1200,sun:0xff6622,si:0.3,label:'SUNSET'},
   {sky:0x000000,fog:0x000000,amb:0x010102,sun:0x020408,si:0.01,label:'NIGHT'},
 ];
 
@@ -730,8 +796,8 @@ function buildItem(type){
       if(!growRegistry[bk] || growRegistry[bk]._isLoaded){
         growRegistry[bk]={level:1,meshes:[]};
       } else {
-        if(growRegistry[bk].level >= 50){
-          showNotif('⚠️ Max 400m / 最大400mです (50階)'); return;
+        if(growRegistry[bk].level >= 41){
+          showNotif('⚠️ Max 330m / 最大330mです (41階)'); return;
         }
         growRegistry[bk].level++;
       }
@@ -2770,10 +2836,11 @@ function initGame(){
   vel = new THREE.Vector3();
   renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
   renderer.shadowMap.enabled=false;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.8;
+  renderer.toneMappingExposure=1.2;
 
   window.addEventListener('resize',function(){
     var w=window.innerWidth, h=window.innerHeight;
@@ -2794,7 +2861,7 @@ function initGame(){
 
   scene=new THREE.Scene();
   scene.background=new THREE.Color(0x050100);
-  scene.fog=new THREE.FogExp2(0xc8e0f0,0.002);
+  scene.fog=new THREE.FogExp2(0xc8e0f0,0.003);
   camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,2000);
   camera.position.set(0,100,160);
   ambientLight=new THREE.AmbientLight(0x1a0800,0.6);scene.add(ambientLight);
@@ -2805,32 +2872,30 @@ function initGame(){
   });
 
   // 円形の大地
-  var gnd=new THREE.Mesh(
-    new THREE.CircleGeometry(4000,128),
+  gnd=new THREE.Mesh(
+    new THREE.CircleGeometry(1300,64),
     new THREE.MeshStandardMaterial({color:0x3a8020,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
   );
   gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
   // 円形グリッド：GridHelperの代わりに円形テクスチャ状のグリッドプレーンを使う
   // → GridHelperは四角いので、円形マップ上には専用の円形グリッドを描く
   (function(){
-    var GR=4000, segs=300;
+    var GR=1300, segs=150;
     var gridCanvas=document.createElement('canvas');
-    gridCanvas.width=2048; gridCanvas.height=2048;
+    gridCanvas.width=1024; gridCanvas.height=1024;
     var gc=gridCanvas.getContext('2d');
-    // 背景透明
-    gc.clearRect(0,0,2048,2048);
-    // グリッド線（細い）
-    gc.strokeStyle='rgba(180,170,155,0.35)';
+    gc.clearRect(0,0,1024,1024);
+    gc.strokeStyle='rgba(100,130,80,0.3)';
     gc.lineWidth=0.8;
-    var step=2048/segs;
+    var step=1024/segs;
     for(var gi=0;gi<=segs;gi++){
-      gc.beginPath(); gc.moveTo(gi*step,0); gc.lineTo(gi*step,2048); gc.stroke();
-      gc.beginPath(); gc.moveTo(0,gi*step); gc.lineTo(2048,gi*step); gc.stroke();
+      gc.beginPath(); gc.moveTo(gi*step,0); gc.lineTo(gi*step,1024); gc.stroke();
+      gc.beginPath(); gc.moveTo(0,gi*step); gc.lineTo(1024,gi*step); gc.stroke();
     }
     // 円形クリップ（円の外を消す）
     gc.globalCompositeOperation='destination-in';
     gc.beginPath();
-    gc.arc(1024,1024,1020,0,Math.PI*2);
+    gc.arc(512,512,510,0,Math.PI*2);
     gc.fillStyle='rgba(0,0,0,1)';
     gc.fill();
     var gridTex=new THREE.CanvasTexture(gridCanvas);
@@ -3131,13 +3196,13 @@ function initGame(){
   scene.add(obsLight2); scene.add(obsLight2.target);
 
   // Stars
-  var sp=new Float32Array(4000*3);
-  for(var i=0;i<4000;i++){sp[i*3]=(Math.random()-0.5)*2000;sp[i*3+1]=Math.random()*600+50;sp[i*3+2]=(Math.random()-0.5)*2000;}
+  var sp=new Float32Array(1600*3);
+  for(var i=0;i<1600;i++){sp[i*3]=(Math.random()-0.5)*2000;sp[i*3+1]=Math.random()*600+50;sp[i*3+2]=(Math.random()-0.5)*2000;}
   var sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
   starsMat=new THREE.PointsMaterial({color:0xccddff,size:0.8,transparent:true,opacity:0.0,sizeAttenuation:true});
   var starsObj=new THREE.Points(sg,starsMat);scene.add(starsObj);
-  var brightSp=new Float32Array(200*3);
-  for(var i=0;i<200;i++){
+  var brightSp=new Float32Array(80*3);
+  for(var i=0;i<80;i++){
     var theta=Math.random()*Math.PI*2, phi=Math.random()*Math.PI*0.6, r2=900;
     brightSp[i*3]=Math.sin(phi)*Math.cos(theta)*r2;
     brightSp[i*3+1]=Math.abs(Math.cos(phi))*r2+50;
@@ -3154,12 +3219,12 @@ function initGame(){
   sunGlow=new THREE.Mesh(new THREE.SphereGeometry(48,32,32),sunGlowMat);scene.add(sunGlow);
   sunGlow2Mat=new THREE.MeshBasicMaterial({color:0xff9922,transparent:true,opacity:0.12,side:THREE.BackSide});
   sunGlow2=new THREE.Mesh(new THREE.SphereGeometry(80,32,32),sunGlow2Mat);scene.add(sunGlow2);
-  moonSphere=new THREE.Mesh(new THREE.SphereGeometry(60,32,32),new THREE.MeshBasicMaterial({color:0xffdd00})); // 濃い黄色
+  moonSphere=new THREE.Mesh(new THREE.SphereGeometry(40,32,32),new THREE.MeshBasicMaterial({color:0xffdd00}));
   scene.add(moonSphere);
   moonGlowMat=new THREE.MeshBasicMaterial({color:0xeef6ff,transparent:true,opacity:0.0,side:THREE.BackSide});
-  moonGlow=new THREE.Mesh(new THREE.SphereGeometry(120,32,32),moonGlowMat);scene.add(moonGlow);
+  moonGlow=new THREE.Mesh(new THREE.SphereGeometry(80,32,32),moonGlowMat);scene.add(moonGlow);
   var moonGlow2Mat=new THREE.MeshBasicMaterial({color:0xbbd0ff,transparent:true,opacity:0.0,side:THREE.BackSide});
-  var moonGlow2=new THREE.Mesh(new THREE.SphereGeometry(200,32,32),moonGlow2Mat);scene.add(moonGlow2);
+  var moonGlow2=new THREE.Mesh(new THREE.SphereGeometry(130,32,32),moonGlow2Mat);scene.add(moonGlow2);
   moonGlow2._mat=moonGlow2Mat;
   moonSphere._glow2=moonGlow2;
   // 月の地上照明用PointLight
@@ -3398,28 +3463,24 @@ function ignisLoop(){
   var _now=performance.now(); var dt=(_now-_lastT)/1000; _lastT=_now; t+=dt;
 
   cycle=(t%TIME_CYCLE)/TIME_CYCLE;
-  var SUN_RADIUS=900;
-  // 太陽・月は「奥（Z=-1400）の端」から昇り、X軸方向に横断するアーチ
-  // 会場の奥の端が地平線になる
-  var sunHorizonZ = -1400; // 昇り沈みの地平線Z位置（奥の端）
+  var SUN_RADIUS=800;
+  var sunHorizonZ = -1800;
+  var SUN_MAX_Y = 1200; // 太陽最高点
+  var MOON_MAX_Y = 1100; // 月最高点
 
-  // 太陽: cycle 0→0.5 で右端(+900)→左端(-900) の半円アーチ
-  var sunP = cycle / 0.5;
-  sunP = Math.min(sunP, 1.0);
+  // 太陽: cycle 0→0.5
+  var sunP = Math.min(cycle / 0.5, 1.0);
   var sunX = SUN_RADIUS * (1.0 - sunP * 2.0);
-  var sunY = Math.sin(sunP * Math.PI) * SUN_RADIUS * 1.15;
-  // 昇り始め・沈み終わりは奥に引っ込む（Z lerp: 端のときsunHorizonZ、中央は0）
+  var sunY = Math.sin(sunP * Math.PI) * SUN_MAX_Y;
   var sunZpos = sunHorizonZ * (1.0 - Math.sin(sunP * Math.PI));
   sunSphere.position.set(sunX, sunY, sunZpos);
   sunGlow.position.copy(sunSphere.position);
   sunGlow2.position.copy(sunSphere.position);
 
-  // 月: cycle 0.5→1.0 で右端(+900)→左端(-900) の半円アーチ
-  var moonP = (cycle - 0.5) / 0.5;
-  moonP = Math.max(0.0, Math.min(moonP, 1.0));
-  var moonX = SUN_RADIUS * (1.0 - moonP * 2.0);
-  var moonY = Math.sin(moonP * Math.PI) * SUN_RADIUS * 1.0;
-  if(cycle < 0.5) { moonX = SUN_RADIUS * 3; moonY = -2000; }
+  // 月: 太陽と同じ軌跡（cycle 0.5→1.0）
+  var moonP = Math.max(0.0, Math.min((cycle - 0.5) / 0.5, 1.0));
+  var moonX = SUN_RADIUS * (1.0 - moonP * 2.0); // 太陽と同じX軌跡
+  var moonY = cycle < 0.5 ? -2000 : Math.sin(moonP * Math.PI) * MOON_MAX_Y;
   var moonZpos = cycle < 0.5 ? sunHorizonZ : sunHorizonZ * (1.0 - Math.sin(moonP * Math.PI));
   moonSphere.position.set(moonX, moonY, moonZpos);
   moonGlow.position.copy(moonSphere.position);
@@ -3472,7 +3533,7 @@ function ignisLoop(){
     // PRE-SUNSET: 青→黄金色へじわじわ（cycle 0.35〜0.45）
     var f = (cycle - 0.35) / 0.10;
     skyCol = lerpColor(0x5ba3d9, 0xffcc44, f);
-    fogCol = lerpColor(0x77aacc, 0xee9933, f);
+    fogCol = lerpColor(0x77aacc, 0xcc6600, f);
     ambCol = lerpColor(0x334455, 0x443322, f);
     ambInt = 1.0 - f * 0.3;
     sunInt = 1.0 - f * 0.1;
@@ -3482,7 +3543,7 @@ function ignisLoop(){
     // SUNSET本番: 黄金→オレンジ→暗赤（cycle 0.45〜0.55）
     var f = (cycle - 0.45) / 0.10;
     skyCol = lerpColor(0xffcc44, 0x221008, f);
-    fogCol = lerpColor(0xee9933, 0x110400, f);
+    fogCol = lerpColor(0xcc6600, 0x110400, f);
     ambCol = lerpColor(0x443322, 0x180800, f);
     ambInt = 0.7 - f * 0.65;
     sunInt = 0.9 - f * 0.85;
@@ -3571,8 +3632,19 @@ function ignisLoop(){
       }
     }
   }
-  if(windowMeshes.length>0){
-    // SUNSET(0.35)〜から徐々に点灯、NIGHT(0.55〜)でフル点灯
+  var _wf=_wf||0; _wf++;
+  // 地面の色を時間帯に合わせて更新
+  if(_wf%10===0 && typeof gnd !== 'undefined' && gnd && gnd.material){
+    if(timeLabel==='DAY' || timeLabel==='MORNING'){
+      gnd.material.color.setHex(0x2d6b1a);
+    } else if(timeLabel==='SUNSET'){
+      gnd.material.color.setHex(0x3a4010);
+    } else if(timeLabel==='NIGHT'){
+      gnd.material.color.setHex(0x0a1a05);
+    }
+  }
+  if(_wf%5===0) updateLOD();
+  if(windowMeshes.length>0 && _wf%3===0){
     var winFac = 0;
     if(cycle >= 0.35 && cycle < 0.55) winFac = (cycle - 0.35) / 0.20;
     else if(cycle >= 0.55 || cycle < 0.08) winFac = 1.0;

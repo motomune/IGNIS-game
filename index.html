@@ -187,50 +187,19 @@ max-height:calc(100dvh - 8px);width:min(320px,calc(100vw - 80px));
 <div id="build-btn" onclick="toggleBuildMenu()">BUILD<br><span style="font-size:9px;letter-spacing:2px;">設置</span></div>
 <div id="recovery-btn" onclick="toggleRecoveryMode()">UNDO<br><span style="font-size:9px;letter-spacing:2px;">回収</span></div>
 <div id="build-menu">
-  <h3>⚙ BUILD MENU</h3>
-  <div class="build-section">NATURE</div>
-  <div class="build-grid">
-    <div class="build-item" onclick="buildItem('grass')"><div class="bi-icon">🌿</div><span class="bi-name">GRASS<br>草地</span><div class="bi-cost">💰5c</div></div>
-    <div class="build-item" onclick="buildItem('cherry')"><div class="bi-icon">🌸</div><span class="bi-name">CHERRY<br>桜</span><div class="bi-cost">💰15c</div></div>
-    <div class="build-item" onclick="buildItem('broadleaf')"><div class="bi-icon">🌳</div><span class="bi-name">広葉樹<br>TREE</span><div class="bi-cost">💰12c</div></div>
-    <div class="build-item" onclick="buildItem('conifer')"><div class="bi-icon">🌲</div><span class="bi-name">針葉樹<br>PINE</span><div class="bi-cost">💰12c</div></div>
-    <div class="build-item" onclick="buildItem('mountain')"><div class="bi-icon">⛰️</div><span class="bi-name">MOUNTAIN<br>山</span><div class="bi-cost">💰150c</div></div>
-    <div class="build-item" onclick="buildItem('river')"><div class="bi-icon">🌊</div><span class="bi-name">RIVER<br>川</span><div class="bi-cost">💰80c</div></div>
-    <div class="build-item" onclick="buildItem('lake')"><div class="bi-icon">💧</div><span class="bi-name">LAKE<br>湖</span><div class="bi-cost">💰120c</div></div>
-    <div class="build-item" onclick="buildItem('fountain')"><div class="bi-icon">⛲</div><span class="bi-name">FOUNTAIN<br>噴水</span><div class="bi-cost">💰60c</div></div>
-  </div>
-  <div class="build-section">ROAD & TRANSPORT</div>
-  <div class="build-grid">
-    <div class="build-item" onclick="buildItem('sidewalk')"><div class="bi-icon">🚶</div><span class="bi-name">SIDEWALK<br>歩道</span><div class="bi-cost">💰10c</div></div>
-    <div class="build-item" onclick="buildItem('road')"><div class="bi-icon">&#x1F6E3;</div><span class="bi-name">ROAD<br>道路</span><div class="bi-cost">💰20c</div></div>
-    <div class="build-item" onclick="buildItem('roadcurveR')"><div class="bi-icon">&#x27A1;</div><span class="bi-name">CURVE R<br>右曲</span><div class="bi-cost">💰20c</div></div>
-    <div class="build-item" onclick="buildItem('roadcurveL')"><div class="bi-icon">&#x2B05;</div><span class="bi-name">CURVE L<br>左曲</span><div class="bi-cost">💰20c</div></div>
-    <div class="build-item" onclick="buildItem('slope')"><div class="bi-icon">📐</div><span class="bi-name">SLOPE<br>坂道</span><div class="bi-cost">💰40c</div></div>
-    <div class="build-item" onclick="buildItem('intersection')"><div class="bi-icon">✛</div><span class="bi-name">CROSS<br>交差点</span><div class="bi-cost">💰30c</div></div>
-    <div class="build-item" onclick="buildItem('streetlightR')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT R<br>街灯→</span><div class="bi-cost">💰15c</div></div>
-    <div class="build-item" onclick="buildItem('streetlightL')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT L<br>街灯←</span><div class="bi-cost">💰15c</div></div>
-    <div class="build-item" onclick="buildItem('bridge')"><div class="bi-icon">&#x1F309;</div><span class="bi-name">BRIDGE<br>橋</span><div class="bi-cost">💰100c</div></div>
-    <div class="build-item" onclick="buildItem('footbridge')"><div class="bi-icon">&#x1F6B6;</div><span class="bi-name">WALKWAY<br>歩道橋</span><div class="bi-cost">💰60c</div></div>
-    <div class="build-item" onclick="buildItem('car')"><div class="bi-icon">&#x1F697;</div><span class="bi-name">CAR<br>車</span><div class="bi-cost">💰30c</div></div>
-    <div class="build-item" onclick="buildItem('bike')"><div class="bi-icon">&#x1F3CD;</div><span class="bi-name">BIKE<br>バイク</span><div class="bi-cost">💰20c</div></div>
-    <div class="build-item" onclick="buildItem('person')"><div class="bi-icon">&#x1F9CD;</div><span class="bi-name">PERSON<br>人</span><div class="bi-cost">💰5c</div></div>
-  </div>
-  <div class="build-section">BUILDINGS</div>
-  <div class="build-grid">
-    <div class="build-item" onclick="buildItem('house')"><div class="bi-icon">🏠</div><span class="bi-name">HOUSE<br>一軒家</span><div class="bi-cost">💰80c</div></div>
+  <div class="build-section">BUILDINGS / 建物</div>
+  <div class="build-items">
     <div class="build-item" onclick="buildItem('building')"><div class="bi-icon">🏢</div><span class="bi-name">BUILDING<br>ビル</span><div class="bi-cost">💰50c</div></div>
     <div class="build-item" onclick="buildItem('glassbuilding')"><div class="bi-icon">🏙️</div><span class="bi-name">GLASS<br>ガラス棟</span><div class="bi-cost">💰80c</div></div>
-    <div class="build-item" onclick="buildItem('paddy')"><div class="bi-icon">🌾</div><span class="bi-name">PADDY<br>田んぼ</span><div class="bi-cost">💰40c</div></div>
-    <div class="build-item" onclick="buildItem('school')"><div class="bi-icon">🏫</div><span class="bi-name">SCHOOL<br>学校</span><div class="bi-cost">💰200c</div></div>
-    <div class="build-item" onclick="buildItem('gym')"><div class="bi-icon">🏋️</div><span class="bi-name">GYM<br>体育館</span><div class="bi-cost">💰150c</div></div>
   </div>
-  <div class="build-section">SPORTS</div>
-  <div class="build-grid">
-    <div class="build-item" onclick="buildItem('schoolyard')"><div class="bi-icon">⬜</div><span class="bi-name">YARD<br>校庭</span><div class="bi-cost">💰100c</div></div>
-    <div class="build-item" onclick="buildItem('tennis')"><div class="bi-icon">🎾</div><span class="bi-name">TENNIS<br>テニス</span><div class="bi-cost">💰120c</div></div>
-    <div class="build-item" onclick="buildItem('soccer')"><div class="bi-icon">⚽</div><span class="bi-name">SOCCER<br>サッカー</span><div class="bi-cost">💰200c</div></div>
+  <div class="build-section">ROAD & LIGHT / 道・灯</div>
+  <div class="build-items">
+    <div class="build-item" onclick="buildItem('road')"><div class="bi-icon">&#x1F6E3;</div><span class="bi-name">ROAD<br>道路</span><div class="bi-cost">💰20c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightR')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT R<br>街灯→</span><div class="bi-cost">💰15c</div></div>
+    <div class="build-item" onclick="buildItem('streetlightL')"><div class="bi-icon">💡</div><span class="bi-name">LIGHT L<br>街灯←</span><div class="bi-cost">💰15c</div></div>
   </div>
   <div id="build-close" onclick="toggleBuildMenu()">✕ CLOSE / 閉じる</div>
+</div>
 </div>
 
 <div id="kb-controls">
@@ -766,8 +735,8 @@ function buildItem(type){
       if(!growRegistry[bk] || growRegistry[bk]._isLoaded){
         growRegistry[bk]={level:1,meshes:[]};
       } else {
-        if(growRegistry[bk].level >= 41){
-          showNotif('⚠️ Max 330m / 最大330mです (41階)'); return;
+        if(growRegistry[bk].level >= 37){
+          showNotif('⚠️ Max 300m / 最大300mです (37階)'); return;
         }
         growRegistry[bk].level++;
       }
@@ -2843,14 +2812,14 @@ function initGame(){
 
   // 円形の大地
   gnd=new THREE.Mesh(
-    new THREE.CircleGeometry(1300,64),
+    new THREE.CircleGeometry(1000,64),
     new THREE.MeshStandardMaterial({color:0x3a8020,roughness:0.98,metalness:0.0,envMapIntensity:0.0})
   );
   gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
   // 円形グリッド：GridHelperの代わりに円形テクスチャ状のグリッドプレーンを使う
   // → GridHelperは四角いので、円形マップ上には専用の円形グリッドを描く
   (function(){
-    var GR=1300, segs=150;
+    var GR=1000, segs=100;
     var gridCanvas=document.createElement('canvas');
     gridCanvas.width=1024; gridCanvas.height=1024;
     var gc=gridCanvas.getContext('2d');
